@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between mb-4">
+    <h2><i class="fa-solid fa-bed text-primary me-2"></i>Manage Rooms</h2>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary mt-1">Back to Dashboard</a>
+</div>
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card p-4 shadow-sm border-top border-primary border-4 h-100">
+            <h5 class="fw-bold mb-3">Add New Room</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="text" name="r_num" class="form-control mb-2" placeholder="Room Number (e.g. 101)" required>
+                <div class="row g-2 mb-2">
+                    <div class="col"><input type="number" name="r_cap" class="form-control" placeholder="Capacity" required></div>
+                    <div class="col"><input type="number" name="r_fee" class="form-control" placeholder="Fee (₹)" required></div>
+                </div>
+                <select name="r_type" class="form-select mb-3">
+                    <option value="AC">AC</option>
+                    <option value="NON_AC">Non-AC</option>
+                </select>
+                <button type="submit" class="btn btn-primary w-100 fw-bold">Add Room</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-4 shadow-sm border-top border-success border-4 h-100">
+            <h5 class="fw-bold mb-3">Allocate Room to Tenant</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="allocate" value="1">
+                <label class="form-label small fw-bold mb-1">Select Unassigned Tenant</label>
+                <select name="tenant_id" class="form-select mb-3" required {% if not unassigned_tenants %}disabled{% endif %}>
+                    <option value="" disabled selected>-- Select Tenant --</option>
+                    {% for t in unassigned_tenants %}
+                    <option value="{{ t.id }}">{{ t.first_name }} {{ t.last_name }} (@{{ t.username }})</option>
+                    {% empty %}
+                    <option value="" disabled>All tenants are assigned rooms.</option>
+                    {% endfor %}
+                </select>
+                
+                <label class="form-label small fw-bold mb-1">Select Available Room</label>
+                <select name="room_id" class="form-select mb-4" required {% if not available_rooms %}disabled{% endif %}>
+                    <option value="" disabled selected>-- Select Room --</option>
+                    {% for r in available_rooms %}
+                    <option value="{{ r.id }}">Room {{ r.room_number }} ({{ r.get_room_type_display }}) - ₹{{ r.fee_per_month }}/mo</option>
+                    {% empty %}
+                    <option value="" disabled>No available rooms with capacity.</option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="btn btn-success w-100 fw-bold" {% if not unassigned_tenants or not available_rooms %}disabled{% endif %}>Allocate Tenant</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm">
+            <h5 class="fw-bold mb-3">Hostel Rooms Inventory</h5>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light"><tr><th>Room No</th><th>Type</th><th>Fee/mo</th><th>Capacity</th></tr></thead>
+                    <tbody>
+                        {% for r in rooms %}
+                        <tr>
+                            <td class="fw-bold">{{ r.room_number }}</td>
+                            <td>{{ r.get_room_type_display }}</td>
+                            <td>₹{{ r.fee_per_month }}</td>
+                            <td><span class="badge bg-{% if r.is_full %}danger{% else %}success{% endif %}">{{ r.occupants }} / {{ r.capacity }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted p-4">No rooms created yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

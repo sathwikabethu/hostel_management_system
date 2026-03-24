@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold">Tenant Dashboard</h2>
+        <p class="text-muted">Welcome to your portal, {{ user.first_name }}. View your room details, pay fees, and raise requests.</p>
+    </div>
+</div>
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card p-4 h-100 border-start border-info border-5">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-bed text-info me-2"></i>My Room Assignment</h5>
+            {% if profile.room %}
+                <h3 class="fw-bold text-dark">Room {{ profile.room.room_number }}</h3>
+                <p class="mb-1 text-muted"><i class="fa-solid fa-snowflake me-1"></i> Type: {{ profile.room.get_room_type_display }}</p>
+                <p class="mb-0 text-muted"><i class="fa-solid fa-money-check-dollar me-1"></i> Monthly Fee: ₹{{ profile.room.fee_per_month }}</p>
+            {% else %}
+                <div class="alert alert-warning mb-0"><i class="fa-solid fa-triangle-exclamation"></i> You have not been assigned a room yet. Please contact the administrator.</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-4 h-100 d-flex flex-column justify-content-center">
+            <a href="{% url 'view_menu' %}" class="btn btn-outline-info btn-lg mb-3 fw-bold"><i class="fa-solid fa-utensils me-2"></i>View Weekly Menu</a>
+            <a href="{% url 'tenant_payments' %}" class="btn btn-outline-success btn-lg mb-3 fw-bold" {% if not profile.room %}style="pointer-events: none; opacity: 0.5;"{% endif %}><i class="fa-solid fa-file-invoice-dollar me-2"></i>View Fees & Payments</a>
+            <a href="{% url 'raise_complaint' %}" class="btn btn-outline-danger btn-lg mb-3 fw-bold"><i class="fa-solid fa-bullhorn me-2"></i>Raise a Complaint</a>
+            <a href="{% url 'request_visitor' %}" class="btn btn-outline-primary btn-lg fw-bold"><i class="fa-solid fa-user-group me-2"></i>Request Visitor Pass</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 mb-5">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-bell text-warning me-2"></i>Recent Announcements</h5>
+            <div class="list-group list-group-flush">
+                {% for ann in announcements %}
+                <div class="list-group-item px-0">
+                    <div class="d-flex w-100 justify-content-between">
+                      <h6 class="mb-1 fw-bold">{{ ann.title }}</h6>
+                      <small class="text-muted">{{ ann.date_posted|timesince }} ago</small>
+                    </div>
+                    <p class="mb-1 text-muted small">{{ ann.content }}</p>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted p-3">No announcements at this time.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

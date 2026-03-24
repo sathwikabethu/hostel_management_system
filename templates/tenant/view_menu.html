@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between mb-4">
+    <h2><i class="fa-solid fa-utensils text-success me-2"></i>Weekly Food Menu</h2>
+    <a href="{% url 'tenant_dashboard' %}" class="btn btn-outline-secondary mt-1">Back to Dashboard</a>
+</div>
+<div class="row g-4">
+    {% for m in menus %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card p-3 shadow-sm border-start border-success border-5 h-100">
+            <h5 class="fw-bold text-success border-bottom pb-2 mb-3">{{ m.day }}</h5>
+            <p class="mb-2"><strong><i class="fa-solid fa-mug-saucer me-1"></i> Breakfast:</strong><br/> <span class="text-muted">{{ m.breakfast }}</span></p>
+            <p class="mb-2"><strong><i class="fa-solid fa-bowl-food me-1"></i> Lunch:</strong><br/> <span class="text-muted">{{ m.lunch }}</span></p>
+            <p class="mb-0"><strong><i class="fa-solid fa-utensils me-1"></i> Dinner:</strong><br/> <span class="text-muted">{{ m.dinner }}</span></p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

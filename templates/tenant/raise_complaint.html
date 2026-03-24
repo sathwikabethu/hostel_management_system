@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-5">
+        <a href="{% url 'tenant_dashboard' %}" class="btn btn-sm btn-outline-secondary mb-3"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+        <div class="card p-4 shadow-sm border-top border-danger border-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-bullhorn text-danger me-2"></i> Raise a Complaint</h5>
+            <p class="text-muted small">Report any room or facility issues to the administration.</p>
+            <form method="POST">
+                {% csrf_token %}
+                <label class="fw-bold small mb-1">Issue Title</label>
+                <input type="text" name="title" class="form-control mb-3" placeholder="e.g. AC Not Working" required>
+                <label class="fw-bold small mb-1">Description</label>
+                <textarea name="desc" class="form-control mb-4" rows="4" placeholder="Describe your issue in detail..." required></textarea>
+                <button type="submit" class="btn btn-danger w-100 fw-bold">Submit Complaint</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-7 mt-4 mt-md-0">
+        <div class="card p-4 shadow-sm h-100">
+            <h5 class="fw-bold mb-3">My Complaint History</h5>
+            <ul class="list-group list-group-flush">
+                {% for c in my_complaints %}
+                <li class="list-group-item px-0">
+                    <div class="d-flex justify-content-between">
+                        <strong class="text-dark">{{ c.title }}</strong>
+                        <span class="badge bg-{% if c.status == 'Open' %}warning text-dark{% elif c.status == 'Resolved' %}success{% else %}info{% endif %}">{{ c.status }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <small class="text-muted">{{ c.description|truncatewords:12 }}</small>
+                        <small class="text-muted"><i class="fa-regular fa-clock me-1"></i>{{ c.date_posted|date:"M d, Y" }}</small>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted text-center p-4">You have not submitted any complaints.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

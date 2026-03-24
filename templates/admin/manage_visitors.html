@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between mb-4">
+    <h2><i class="fa-solid fa-person-walking-luggage text-info me-2"></i>Visitor Approvals</h2>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary mt-1">Back to Dashboard</a>
+</div>
+<div class="card p-4 shadow-sm border-top border-info border-4">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="table-light"><tr><th>Tenant Requesting</th><th>Visitor Name</th><th>Purpose of Visit</th><th>Date of Visit</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for v in visitors %}
+                <tr>
+                    <td><strong>{{ v.tenant.first_name }} {{ v.tenant.last_name }}</strong></td>
+                    <td>{{ v.visitor_name }}</td>
+                    <td>{{ v.purpose }}</td>
+                    <td>{{ v.visit_date|date:"M d, Y" }}</td>
+                    <td><span class="badge bg-{% if v.status == 'Pending' %}warning text-dark{% elif v.status == 'Approved' %}success{% else %}danger{% endif %}">{{ v.status }}</span></td>
+                    <td style="width: 200px;">
+                        <form method="POST" class="d-flex">
+                            {% csrf_token %}
+                            <input type="hidden" name="v_id" value="{{ v.id }}">
+                            <select name="status" class="form-select form-select-sm me-2">
+                                <option value="Pending" {% if v.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Approved" {% if v.status == 'Approved' %}selected{% endif %}>Approve</option>
+                                <option value="Rejected" {% if v.status == 'Rejected' %}selected{% endif %}>Reject</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted p-4">No visitor requests.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

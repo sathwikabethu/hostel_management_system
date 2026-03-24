@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <a href="{% url 'tenant_dashboard' %}" class="btn btn-sm btn-outline-secondary mb-3"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+        <div class="card p-4 shadow-sm border-top border-success border-4 h-100">
+            <h4 class="mb-3 fw-bold"><i class="fa-solid fa-credit-card text-success me-2"></i> Pay Monthly Fee</h4>
+            <div class="alert alert-success border-success fw-bold text-center fs-5">
+                Amount Due: ${{ fee }}
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <label class="form-label fw-bold">Select Payment Gateway</label>
+                <select name="method" class="form-select mb-4">
+                    <option value="UPI">UPI Transfer (GooglePay / PhonePe/ Paytm)</option>
+                    <option value="Card">Debit / Credit Card</option>
+                </select>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success btn-lg fw-bold"><i class="fa-solid fa-lock me-1"></i> Pay Securely Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-7 mt-4 mt-md-0">
+        <div class="card p-4 shadow-sm h-100">
+            <h5 class="fw-bold mb-3">Payment History</h5>
+            <ul class="list-group list-group-flush">
+                {% for h in history %}
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <div>
+                        <strong class="d-block">{{ h.month|date:"F Y" }}</strong>
+                        <small class="text-muted"><i class="fa-solid fa-building-columns me-1"></i> Paid via {{ h.payment_method }}</small>
+                    </div>
+                    <div>
+                        <span class="badge bg-success rounded-pill px-3 py-2 fs-6">+ ${{ h.amount }}</span>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted text-center p-4">No payments history found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
