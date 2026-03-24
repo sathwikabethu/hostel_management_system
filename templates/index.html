@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary), #8B5CF6);
+        border-radius: 24px;
+        color: white;
+        padding: 6rem 2rem;
+        text-align: center;
+        margin-bottom: 4rem;
+        box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        width: 400px; height: 400px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+        top: -100px; left: -100px;
+    }
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        width: 300px; height: 300px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+        bottom: -50px; right: 5%;
+    }
+    .hero-title {
+        font-weight: 800;
+        font-size: 3.5rem;
+        letter-spacing: -0.03em;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 2;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .hero-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.95;
+        max-width: 650px;
+        margin: 0 auto 2.5rem;
+        position: relative;
+        z-index: 2;
+        font-weight: 400;
+    }
+    .feature-box {
+        padding: 3rem 2rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+        text-align: center;
+        height: 100%;
+    }
+    .feature-box:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        border-color: #cbd5e1;
+    }
+    .feature-box i {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        color: var(--primary);
+    }
+    .feature-box i.text-success { color: #10b981 !important; }
+    .feature-box h4 {
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: var(--dark);
+    }
+    .btn-light-custom {
+        background: white;
+        color: var(--primary);
+        font-weight: 800;
+        padding: 1rem 2.5rem;
+        border-radius: 14px;
+        border: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .btn-light-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px -5px rgba(0,0,0,0.15);
+        color: #312e81;
+    }
+    .btn-outline-light-custom {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255,255,255,0.6);
+        font-weight: 800;
+        padding: 1rem 2.5rem;
+        border-radius: 14px;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 1.1rem;
+    }
+    .btn-outline-light-custom:hover {
+        border-color: white;
+        background: rgba(255,255,255,0.15);
+        color: white;
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <div class="hero-section mt-3">
+            <h1 class="hero-title">Experience Modern Living</h1>
+            <p class="hero-subtitle">Smart Stay is the all-in-one management platform for your stay. Discover your room, pay fees, order meals, and connect with administrators seamlessly.</p>
+            <div class="position-relative" style="z-index: 2;">
+                <a href="{% url 'register' %}" class="btn-light-custom me-sm-3 mb-3 mb-sm-0"><i class="fa-solid fa-user-plus me-2"></i>Join as a Tenant</a>
+                <a href="{% url 'login' %}" class="btn-outline-light-custom"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5 pb-5">
+    <div class="col-12 text-center mb-4">
+        <h2 class="fw-bold mb-3">Everything you need</h2>
+        <p class="text-muted fs-5">A fully featured portal designed for a hassle-free hostel experience.</p>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="feature-box">
+            <div class="mb-4 d-inline-block p-4 rounded-circle" style="background:#e0e7ff;"><i class="fa-solid fa-money-check-dollar mb-0" style="color:#4f46e5;"></i></div>
+            <h4>Digital Ledgers</h4>
+            <p class="text-muted mb-0">Track your monthly rent and outstanding dues instantly through your personalized smart dashboard.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-box">
+            <div class="mb-4 d-inline-block p-4 rounded-circle" style="background:#dcfce7;"><i class="fa-solid fa-utensils mb-0" style="color:#16a34a;"></i></div>
+            <h4>Smart Mess Menu</h4>
+            <p class="text-muted mb-0">Always know what's cooking. Check the upcoming breakfast, lunch, and dinner menus instantly.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-box">
+            <div class="mb-4 d-inline-block p-4 rounded-circle" style="background:#fee2e2;"><i class="fa-solid fa-bullhorn mb-0" style="color:#dc2626;"></i></div>
+            <h4>Rapid Resolutions</h4>
+            <p class="text-muted mb-0">Raise maintenance complaints directly and get them resolved quickly by the administration staff.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

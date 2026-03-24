@@ -3,23 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Hostel Management</title>
+    <title>Smart Stay</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
-        .navbar-brand { font-weight: 700; color: #007bff !important; }
-        .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 12px; }
-        .bg-gradient-primary { background: linear-gradient(135deg, #0d6efd, #0dcaf0); color: white; }
+        :root {
+            --primary: #4338CA;
+            --secondary: #0ea5e9;
+            --dark: #0f172a;
+            --light: #f1f5f9;
+        }
+        body { 
+            background-color: #f1f5f9;
+            font-family: 'Outfit', sans-serif; 
+            color: var(--dark);
+        }
+        /* A vibrant, solid navbar */
+        .navbar {
+            background: linear-gradient(90deg, #1e1b4b 0%, #4338ca 100%) !important;
+            padding: 1rem 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-brand, .nav-link { 
+            color: white !important; 
+            opacity: 0.9;
+        }
+        .nav-link:hover { opacity: 1; }
+        .navbar-brand {
+            font-weight: 800; 
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+            opacity: 1;
+        }
+        .navbar-brand i { color: #38bdf8; }
+        
+        /* High contrast cards */
+        .card { 
+            border: 1px solid #e2e8f0; 
+            background: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 12px; 
+            transition: all 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Vibrant Buttons */
+        .btn-primary { 
+            background-color: var(--primary);
+            border: none;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(67, 56, 202, 0.2);
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #312e81;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(67, 56, 202, 0.3);
+        }
+        
+        /* Feature Cards (for dashboards) */
+        .feature-card {
+            text-decoration: none;
+            display: block;
+            border: 2px solid transparent;
+        }
+        .feature-card:hover {
+            border-color: #cbd5e1;
+        }
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto;
+            transition: transform 0.3s;
+        }
+        .feature-card:hover .feature-icon { transform: scale(1.1) rotate(5deg); }
+        .feature-info .feature-icon { background: #e0f2fe; color: #0284c7; }
+        .feature-success .feature-icon { background: #dcfce7; color: #16a34a; }
+        .feature-danger .feature-icon { background: #fee2e2; color: #dc2626; }
+        .feature-primary .feature-icon { background: #e0e7ff; color: #4f46e5; }
+        .feature-warning .feature-icon { background: #fef3c7; color: #d97706; }
+        
+        .feature-card h5 { color: var(--dark); transition: color 0.2s; }
+        .feature-card:hover h5 { color: var(--primary); }
+        
+        /* Fancy page headers */
+        h2 {
+            font-weight: 800;
+            color: #1e293b;
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 50%;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+        
+        /* Custom Inputs */
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.1);
+        }
+        
+        /* Table enhancements */
+        .table { --bs-table-bg: transparent; margin-bottom: 0; }
+        .table-responsive { border-radius: 12px; border: 1px solid #e2e8f0; background: white; }
+        .table thead th {
+            background-color: #f8fafc !important;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            padding: 1.25rem 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .table tbody td { 
+            padding: 1rem; 
+            vertical-align: middle; 
+            color: #334155; 
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .badge { padding: 0.5em 0.8em; border-radius: 6px; font-weight: 600; letter-spacing: 0.5px; }
     </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
   <div class="container">
-    <a class="navbar-brand" href="{% url 'home' %}"><i class="fa-solid fa-hotel me-2"></i>SmartHostel</a>
+    <a class="navbar-brand" href="{% url 'home' %}"><i class="fa-solid fa-hotel me-2"></i>Smart Stay</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbars">
       <span class="navbar-toggler-icon"></span>
     </button>

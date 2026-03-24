@@ -38,7 +38,9 @@ def logout_view(request):
     return redirect('login')
 
 def home_view(request):
-    return redirect('login')
+    if request.user.is_authenticated:
+        return redirect('admin_dashboard' if request.user.is_admin or request.user.is_superuser else 'tenant_dashboard')
+    return render(request, 'index.html')
 
 # --- Admin Dash & Features ---
 @login_required
