@@ -144,8 +144,13 @@ def manage_visitors(request):
 @admin_required
 def manage_menu(request):
     from .models import WeeklyMenu
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    if WeeklyMenu.objects.count() < 7:
+        for day in days:
+            WeeklyMenu.objects.get_or_create(day=day)
+            
     if request.method == 'POST':
-        for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']:
+        for day in days:
             b = request.POST.get(f'breakfast_{day}')
             l = request.POST.get(f'lunch_{day}')
             d = request.POST.get(f'dinner_{day}')
