@@ -1,38 +1,152 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="d-flex justify-content-between mb-4">
-    <h2><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>Manage Complaints</h2>
-    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary mt-1">Back to Dashboard</a>
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-scale-balanced text-warning me-2"></i>Moderate Complaint Polls</h2>
+        <p class="text-muted">Review, escalate, and resolve democratic tenant complaint polls.</p>
+    </div>
 </div>
-<div class="card p-4 shadow-sm border-top border-warning border-4">
-    <div class="table-responsive">
-        <table class="table align-middle">
-            <thead class="table-light"><tr><th>Tenant</th><th>Title</th><th>Date</th><th>Status</th><th>Update Action</th></tr></thead>
-            <tbody>
-                {% for c in complaints %}
-                <tr>
-                    <td>{{ c.tenant.first_name }} {{ c.tenant.last_name }}</td>
-                    <td><strong>{{ c.title }}</strong><br><small class="text-muted">{{ c.description|truncatewords:15 }}</small></td>
-                    <td>{{ c.date_posted|date:"M d, Y" }}</td>
-                    <td><span class="badge bg-{% if c.status == 'Open' %}warning text-dark{% elif c.status == 'Resolved' %}success{% else %}info{% endif %}">{{ c.status }}</span></td>
-                    <td style="width: 250px;">
-                        <form method="POST" class="d-flex">
-                            {% csrf_token %}
-                            <input type="hidden" name="c_id" value="{{ c.id }}">
-                            <select name="status" class="form-select form-select-sm me-2">
-                                <option value="Open" {% if c.status == 'Open' %}selected{% endif %}>Open</option>
-                                <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %}>In Progress</option>
-                                <option value="Resolved" {% if c.status == 'Resolved' %}selected{% endif %}>Resolved</option>
-                            </select>
-                            <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                        </form>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5" class="text-center text-muted p-4">No complaints recorded.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+<ul class="nav nav-tabs mb-4" id="pollAdminTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold active text-danger" id="closed-tab" data-bs-toggle="tab" data-bs-target="#closed-polls" type="button" role="tab">Pending Action (Closed)</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-polls" type="button" role="tab">Active (Voting phase)</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold text-muted" id="resolved-tab" data-bs-toggle="tab" data-bs-target="#resolved-polls" type="button" role="tab">Resolved / History</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="pollAdminTabsContent">
+    <!-- CLOSED POLLS (Requires Action) -->
+    <div class="tab-pane fade show active" id="closed-polls" role="tabpanel">
+        <div class="row g-4">
+            {% for poll in closed_polls %}
+            <div class="col-12">
+                <div class="card shadow-sm border-0 border-start border-5 {% if poll.priority_flag == 'high' %}border-danger{% elif poll.priority_flag == 'medium' %}border-warning{% elif poll.priority_flag == 'low' %}border-info{% else %}border-secondary{% endif %}">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-7">
+                                <span class="badge {% if poll.priority_flag == 'high' %}bg-danger{% elif poll.priority_flag == 'medium' %}bg-warning text-dark{% else %}bg-secondary{% endif %} mb-2">Priority: {{ poll.priority_flag|title }}</span>
+                                <h4 class="fw-bold">{{ poll.complaint_title }}</h4>
+                                <p class="text-muted small mb-2">Raised by {{ poll.raised_by.username }} | Category: {{ poll.complaint_category }}</p>
+                                <p class="mb-3">{{ poll.complaint_description }}</p>
+                                <div class="bg-light p-3 rounded d-inline-block">
+                                    <span class="text-success fw-bold me-3"><i class="fa-solid fa-thumbs-up"></i> {{ poll.vote_yes_count }} Yes</span>
+                                    <span class="text-danger fw-bold"><i class="fa-solid fa-thumbs-down"></i> {{ poll.vote_no_count }} No</span>
+                                </div>
+                            </div>
+                            <div class="col-md-5 mt-3 mt-md-0 d-flex flex-column gap-2">
+                                <!-- Action Forms -->
+                                <div class="btn-group w-100 shadow-sm" role="group">
+                                    <button type="button" class="btn btn-outline-success fw-bold" onclick="document.getElementById('resolvePanel{{ poll.id }}').classList.toggle('d-none'); document.getElementById('dismissPanel{{ poll.id }}').classList.add('d-none');"><i class="fa-solid fa-check me-1"></i> Resolve</button>
+                                    <button type="button" class="btn btn-outline-danger fw-bold" onclick="document.getElementById('dismissPanel{{ poll.id }}').classList.toggle('d-none'); document.getElementById('resolvePanel{{ poll.id }}').classList.add('d-none');"><i class="fa-solid fa-xmark me-1"></i> Dismiss</button>
+                                </div>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="poll_id" value="{{ poll.id }}">
+                                    <input type="hidden" name="action" value="escalate">
+                                    <button type="submit" class="btn btn-outline-secondary w-100 mt-2" onclick="return confirm('Escalate this to Owners?')"><i class="fa-solid fa-arrow-up-right-dots me-1"></i> Escalate Internally</button>
+                                </form>
+                                
+                                <!-- Modals/Panels for actions -->
+                                <div id="resolvePanel{{ poll.id }}" class="d-none mt-2">
+                                    <form method="POST" class="border p-3 rounded bg-light">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="poll_id" value="{{ poll.id }}">
+                                        <input type="hidden" name="action" value="resolve">
+                                        <label class="form-label small fw-bold text-success">Resolution Action Note (Min 20 chars)</label>
+                                        <textarea name="admin_action_note" class="form-control form-control-sm mb-2" required minlength="20" placeholder="E.g. Sent maintenance team to fix elevator..."></textarea>
+                                        <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Submit Resolution</button>
+                                    </form>
+                                </div>
+                                
+                                <div id="dismissPanel{{ poll.id }}" class="d-none mt-2">
+                                    <form method="POST" class="border p-3 rounded bg-light">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="poll_id" value="{{ poll.id }}">
+                                        <input type="hidden" name="action" value="dismiss">
+                                        <label class="form-label small fw-bold text-danger">Dismissal Reason</label>
+                                        <textarea name="dismissal_reason" class="form-control form-control-sm mb-2" required placeholder="E.g. Upon inspection, no issue was found."></textarea>
+                                        <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold">Dismiss Poll</button>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center p-5 text-muted"><h4><i class="fa-solid fa-clipboard-check text-success fs-1 mb-3"></i><br>All caught up!</h4>No closed polls pending action.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ACTIVE POLLS -->
+    <div class="tab-pane fade" id="active-polls" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table align-middle bg-white shadow-sm rounded">
+                <thead class="table-light">
+                    <tr>
+                        <th>Poll Title</th>
+                        <th>Category</th>
+                        <th>Raised By</th>
+                        <th>Closes At</th>
+                        <th>Votes Gathered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for poll in active_polls %}
+                    <tr>
+                        <td><strong>{{ poll.complaint_title }}</strong></td>
+                        <td>{{ poll.complaint_category }}</td>
+                        <td>{{ poll.raised_by.username }}</td>
+                        <td>{{ poll.closes_at|timeuntil }} left</td>
+                        <td><span class="badge bg-primary px-3 py-2 fs-6">{{ poll.vote_yes_count|add:poll.vote_no_count }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center p-4 text-muted">No active polls are currently voting.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- RESOLVED / HISTORY -->
+    <div class="tab-pane fade" id="resolved-polls" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table align-middle bg-white shadow-sm rounded">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Total Votes</th>
+                        <th>Status</th>
+                        <th>Reviewed By</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for poll in resolved_polls %}
+                    <tr>
+                        <td><strong>{{ poll.complaint_title }}</strong></td>
+                        <td>{{ poll.complaint_category }}</td>
+                        <td>{{ poll.vote_yes_count|add:poll.vote_no_count }}</td>
+                        <td>
+                            <span class="badge {% if poll.poll_status == 'resolved' %}bg-success{% elif poll.poll_status == 'dismissed' %}bg-danger{% else %}bg-secondary{% endif %}">{{ poll.poll_status|title }}</span>
+                        </td>
+                        <td>{{ poll.resolved_by.username|default:"System" }}</td>
+                        <td style="max-width:300px;" class="text-truncate">{{ poll.admin_action_note|default:"N/A" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center p-4 text-muted">No historical polls exist.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

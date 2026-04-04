@@ -6,7 +6,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hostel_project.settings")
 django.setup()
 
 from django.utils import timezone
-from core.models import User, Room, TenantProfile, FeePayment, Complaint, Visitor, Announcement
+from core.models import User, Room, TenantProfile, FeePayment, Announcement
 
 def seed():
     print("Seeding database...")
@@ -16,10 +16,17 @@ def seed():
     r2, _ = Room.objects.get_or_create(room_number='102', defaults={'capacity': 3, 'fee_per_month': 400, 'room_type': 'NON_AC'})
     r3, _ = Room.objects.get_or_create(room_number='103', defaults={'capacity': 1, 'fee_per_month': 800, 'room_type': 'AC'})
 
+    # Create Admin
+    admin_user, _ = User.objects.get_or_create(username='admin', defaults={
+        'first_name': 'Hostel', 'last_name': 'Admin', 'role': 'admin', 'status': 'approved', 'is_superuser': True, 'is_staff': True
+    })
+    admin_user.set_password('admin123')
+    admin_user.save()
+
     # Create Tenants
     def create_tenant(username, first_name, last_name, room):
         user, created = User.objects.get_or_create(username=username, defaults={
-            'first_name': first_name, 'last_name': last_name, 'is_tenant': True
+            'first_name': first_name, 'last_name': last_name, 'role': 'tenant', 'status': 'approved', 'is_active': True
         })
         if created:
             user.set_password('password123')
@@ -37,14 +44,6 @@ def seed():
     FeePayment.objects.get_or_create(tenant=t1, amount=500, status='Paid', payment_method='UPI', month=date.today() - timedelta(days=5))
     FeePayment.objects.get_or_create(tenant=t2, amount=500, status='Paid', payment_method='Card', month=date.today() - timedelta(days=2))
     FeePayment.objects.get_or_create(tenant=t3, amount=400, status='Pending', month=date.today())
-
-    # Create Complaints
-    Complaint.objects.get_or_create(tenant=t1, title='AC not cooling', description='The AC in room 101 is not cooling effectively.', status='Open')
-    Complaint.objects.get_or_create(tenant=t2, title='Leaking Tap', description='Bathroom tap is leaking constantly.', status='Resolved')
-
-    # Create Visitors
-    Visitor.objects.get_or_create(tenant=t1, visitor_name='John Smith', purpose='Family visit', visit_date=timezone.now().date() + timedelta(days=2), status='Pending')
-    Visitor.objects.get_or_create(tenant=t3, visitor_name='Sarah Brown', purpose='Dropping off luggage', visit_date=timezone.now().date(), status='Approved')
 
     # Create Announcements
     Announcement.objects.get_or_create(title='Hostel Maintenance', content='Water supply will be cut off for 2 hours tomorrow afternoon for cleaning.')

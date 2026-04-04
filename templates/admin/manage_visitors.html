@@ -1,39 +1,97 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="d-flex justify-content-between mb-4">
-    <h2><i class="fa-solid fa-person-walking-luggage text-info me-2"></i>Visitor Approvals</h2>
-    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary mt-1">Back to Dashboard</a>
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h2 class="fw-bold mb-0"><i class="fa-solid fa-list-check text-success me-2"></i>Visitor Check-In / Check-Out Log</h2>
+        <p class="text-muted">Manage arrivals and departures for approved visitors.</p>
+    </div>
 </div>
-<div class="card p-4 shadow-sm border-top border-info border-4">
-    <div class="table-responsive">
-        <table class="table align-middle">
-            <thead class="table-light"><tr><th>Tenant Requesting</th><th>Visitor Name</th><th>Purpose of Visit</th><th>Date of Visit</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody>
-                {% for v in visitors %}
-                <tr>
-                    <td><strong>{{ v.tenant.first_name }} {{ v.tenant.last_name }}</strong></td>
-                    <td>{{ v.visitor_name }}</td>
-                    <td>{{ v.purpose }}</td>
-                    <td>{{ v.visit_date|date:"M d, Y" }}</td>
-                    <td><span class="badge bg-{% if v.status == 'Pending' %}warning text-dark{% elif v.status == 'Approved' %}success{% else %}danger{% endif %}">{{ v.status }}</span></td>
-                    <td style="width: 200px;">
-                        <form method="POST" class="d-flex">
-                            {% csrf_token %}
-                            <input type="hidden" name="v_id" value="{{ v.id }}">
-                            <select name="status" class="form-select form-select-sm me-2">
-                                <option value="Pending" {% if v.status == 'Pending' %}selected{% endif %}>Pending</option>
-                                <option value="Approved" {% if v.status == 'Approved' %}selected{% endif %}>Approve</option>
-                                <option value="Rejected" {% if v.status == 'Rejected' %}selected{% endif %}>Reject</option>
-                            </select>
-                            <button type="submit" class="btn btn-sm btn-primary">Update</button>
-                        </form>
-                    </td>
-                </tr>
+
+<div class="row g-4">
+    <!-- Currently In (Checked In) -->
+    <div class="col-md-6">
+        <div class="card p-3 shadow-sm border-top border-warning border-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-person-shelter text-warning me-2"></i>Visitors Currently Inside</h5>
+            <ul class="list-group list-group-flush">
+                {% for log in currently_in %}
+                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0 fw-bold">{{ log.visit_request.visitor.user.first_name }} {{ log.visit_request.visitor.user.last_name }}</h6>
+                        <small class="text-muted">Host: {{ log.visit_request.tenant.username }} | In: {{ log.check_in_time|date:"h:i A" }}</small>
+                    </div>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="check_out">
+                        <input type="hidden" name="log_id" value="{{ log.id }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger shadow-sm"><i class="fa-solid fa-person-walking-arrow-right me-1"></i>Check Out</button>
+                    </form>
+                </li>
                 {% empty %}
-                <tr><td colspan="6" class="text-center text-muted p-4">No visitor requests.</td></tr>
+                <div class="text-center text-muted p-4"><i class="fa-solid fa-building-circle-check fs-2 text-light mb-2"></i><br>No visitors currently inside.</div>
                 {% endfor %}
-            </tbody>
-        </table>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Expected Today -->
+    <div class="col-md-6">
+        <div class="card p-3 shadow-sm border-top border-primary border-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-calendar-day text-primary me-2"></i>Expected Arrivals Today</h5>
+            <ul class="list-group list-group-flush">
+                {% for log in expected_today %}
+                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0 fw-bold">{{ log.visit_request.visitor.user.first_name }} {{ log.visit_request.visitor.user.last_name }}</h6>
+                        <small class="text-muted">Host: {{ log.visit_request.tenant.username }} | Expected: {{ log.visit_request.visit_time_slot }}</small>
+                    </div>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="check_in">
+                        <input type="hidden" name="log_id" value="{{ log.id }}">
+                        <button type="submit" class="btn btn-sm btn-outline-success shadow-sm"><i class="fa-solid fa-building-user me-1"></i>Check In</button>
+                    </form>
+                </li>
+                {% empty %}
+                <div class="text-center text-muted p-4"><i class="fa-solid fa-calendar-xmark fs-2 text-light mb-2"></i><br>No approved visits pending for today.</div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-0">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-book text-secondary me-2"></i>Past Log Ledger</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Visitor</th>
+                            <th>Host Tenant</th>
+                            <th>In</th>
+                            <th>Out</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in past_logs %}
+                        <tr>
+                            <td>{{ log.visit_request.visit_date|date:"M d, Y" }}</td>
+                            <td>{{ log.visit_request.visitor.user.first_name }} {{ log.visit_request.visitor.user.last_name }}</td>
+                            <td>{{ log.visit_request.tenant.username }}</td>
+                            <td>{{ log.check_in_time|date:"h:i A"|default:"-" }}</td>
+                            <td>{{ log.check_out_time|date:"h:i A"|default:"-" }}</td>
+                            <td><span class="badge bg-secondary">{{ log.log_status|title }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted p-3">No historical visitor logs found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

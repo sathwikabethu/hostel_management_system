@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 border rounded p-4 shadow-sm bg-white">
+        <h3 class="text-center mb-4 fw-bold text-dark"><i class="fa-solid fa-person-walking-luggage text-primary me-2"></i>Visitor Registration</h3>
+        <p class="text-center text-muted small mb-4">Register your account and link it to the Tenant you plan to visit. Access is pending Admin approval.</p>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button class="btn btn-primary w-100 fw-bold mt-3" type="submit">Submit Visitor Application</button>
+        </form>
+        <div class="mt-4 text-center">
+            <span class="text-muted">Already have an account? </span><a href="{% url 'login' %}" class="fw-bold text-decoration-none">Login here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

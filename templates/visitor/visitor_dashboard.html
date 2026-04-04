@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 text-center">
+        <h2 class="fw-bold mb-1">Visitor Portal</h2>
+        <p class="text-muted">Welcome, {{ user.first_name }} {{ user.last_name }}. Request passes to visit {{ user.visitor_profile.tenant.first_name }}.</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card p-4 shadow-sm h-100 border-top border-primary border-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-calendar-plus text-primary me-2"></i>New Visit Request</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Date of Visit</label>
+                    <input type="date" name="visit_date" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Time Slot</label>
+                    <select name="time_slot" class="form-select" required>
+                        <option value="Morning (9 AM - 12 PM)">Morning (9 AM - 12 PM)</option>
+                        <option value="Afternoon (1 PM - 4 PM)">Afternoon (1 PM - 4 PM)</option>
+                        <option value="Evening (5 PM - 8 PM)">Evening (5 PM - 8 PM)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Expected Duration</label>
+                    <input type="text" name="duration" class="form-control" placeholder="e.g. 2 hours" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Purpose</label>
+                    <input type="text" name="purpose" class="form-control" placeholder="e.g. Family check-in, Delivery" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Accompanying Persons</label>
+                    <input type="number" name="accompanying_persons" class="form-control" value="0" min="0" max="5">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 fw-bold">Submit Request</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-md-7">
+        <div class="card p-4 shadow-sm h-100">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check text-info me-2"></i>My Visit Requests</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in my_requests %}
+                        <tr>
+                            <td>{{ r.visit_date|date:"M d, Y" }}</td>
+                            <td>{{ r.visit_time_slot }}</td>
+                            <td>{{ r.purpose }}</td>
+                            <td>
+                                {% if r.request_status == 'pending' %}
+                                    <span class="badge bg-warning text-dark"><i class="fa-regular fa-clock me-1"></i> Pending</span>
+                                {% elif r.request_status == 'approved' %}
+                                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i> Approved</span>
+                                {% elif r.request_status == 'rejected' %}
+                                    <span class="badge bg-danger"><i class="fa-solid fa-xmark me-1"></i> Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ r.request_status|title }}</span>
+                                {% endif %}
+                                {% if r.rejection_reason %}
+                                    <br><small class="text-danger mt-1 d-block">{{ r.rejection_reason }}</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted p-4">You have not submitted any visit requests yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

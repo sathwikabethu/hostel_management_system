@@ -1,40 +1,71 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row">
-    <div class="col-md-5">
-        <a href="{% url 'tenant_dashboard' %}" class="btn btn-sm btn-outline-secondary mb-3"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
-        <div class="card p-4 shadow-sm border-top border-danger border-4 h-100">
-            <h5 class="fw-bold mb-3"><i class="fa-solid fa-bullhorn text-danger me-2"></i> Raise a Complaint</h5>
-            <p class="text-muted small">Report any room or facility issues to the administration.</p>
-            <form method="POST">
-                {% csrf_token %}
-                <label class="fw-bold small mb-1">Issue Title</label>
-                <input type="text" name="title" class="form-control mb-3" placeholder="e.g. AC Not Working" required>
-                <label class="fw-bold small mb-1">Description</label>
-                <textarea name="desc" class="form-control mb-4" rows="4" placeholder="Describe your issue in detail..." required></textarea>
-                <button type="submit" class="btn btn-danger w-100 fw-bold">Submit Complaint</button>
-            </form>
-        </div>
+<div class="row mb-4">
+    <div class="col-12 text-center">
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-vote-yea text-primary me-2"></i>Raise a Complaint Poll</h2>
+        <p class="text-muted">Create a democratic poll for other tenants to vote on.</p>
     </div>
-    <div class="col-md-7 mt-4 mt-md-0">
-        <div class="card p-4 shadow-sm h-100">
-            <h5 class="fw-bold mb-3">My Complaint History</h5>
-            <ul class="list-group list-group-flush">
-                {% for c in my_complaints %}
-                <li class="list-group-item px-0">
-                    <div class="d-flex justify-content-between">
-                        <strong class="text-dark">{{ c.title }}</strong>
-                        <span class="badge bg-{% if c.status == 'Open' %}warning text-dark{% elif c.status == 'Resolved' %}success{% else %}info{% endif %}">{{ c.status }}</span>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 border-top border-primary border-4">
+            <div class="card-body p-4">
+                {% if warning %}
+                <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center">
+                    <i class="fa-solid fa-triangle-exclamation fs-4 me-3"></i>
+                    <div>
+                        <strong>Warning!</strong> {{ warning }}
                     </div>
-                    <div class="d-flex justify-content-between mt-1">
-                        <small class="text-muted">{{ c.description|truncatewords:12 }}</small>
-                        <small class="text-muted"><i class="fa-regular fa-clock me-1"></i>{{ c.date_posted|date:"M d, Y" }}</small>
+                </div>
+                {% endif %}
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    {% if warning %}
+                        <input type="hidden" name="ignore_warning" value="true">
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Poll Title</label>
+                        <input type="text" name="complaint_title" class="form-control" placeholder="e.g. Broken elevator in Block B" value="{{ form_data.complaint_title|default:'' }}" required maxlength="100">
                     </div>
-                </li>
-                {% empty %}
-                <li class="list-group-item text-muted text-center p-4">You have not submitted any complaints.</li>
-                {% endfor %}
-            </ul>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Category</label>
+                        <select name="complaint_category" class="form-select" required>
+                            <option value="">-- Select Category --</option>
+                            {% for val, display in poll_categories %}
+                            <option value="{{ val }}" {% if form_data.complaint_category == val %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea name="complaint_description" class="form-control" rows="4" placeholder="Detail the issue being raised..." required minlength="20" maxlength="500">{{ form_data.complaint_description|default:'' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Poll Question</label>
+                        <input type="text" name="poll_question" class="form-control" placeholder="e.g. Do you agree the elevator needs immediate fixing?" value="{{ form_data.poll_question|default:'' }}" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Voting Duration (Days)</label>
+                        <select name="poll_duration_days" class="form-select" required>
+                            {% for val, display in duration_choices %}
+                            <option value="{{ val }}" {% if form_data.poll_duration_days|stringformat:"i" == val|stringformat:"i" %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'tenant_dashboard' %}" class="btn btn-outline-secondary px-4 fw-bold">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">{% if warning %}Confirm and Raise{% else %}Raise Poll{% endif %}</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

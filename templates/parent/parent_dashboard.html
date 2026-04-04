@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 text-center">
+        <h2 class="fw-bold mb-1">Parent Dashboard</h2>
+        <p class="text-muted">Welcome, {{ user.first_name }} {{ user.last_name }}. Manage approvals for your registered children.</p>
+    </div>
+</div>
+
+<!-- Registered Children Info -->
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-top border-info border-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-child text-info me-2"></i>My Monitored Tenants</h5>
+            <div class="d-flex flex-wrap gap-2">
+                {% for child in children %}
+                <span class="badge bg-light text-dark border p-2 px-3 fs-6"><i class="fa-solid fa-user text-muted me-2"></i>{{ child.user.first_name }} {{ child.user.last_name }} (@{{ child.user.username }})</span>
+                {% empty %}
+                <span class="text-muted">You do not have any active tenants registered to your account.</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Visitors Appoval -->
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-top border-warning border-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-person-walking-luggage text-warning me-2"></i>Action Required: Pending Visit Requests</h5>
+            <p class="small text-muted mb-3">Notice: Only registered parents have the authority to allow visitor requests for their children.</p>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student (Host)</th>
+                            <th>Visitor</th>
+                            <th>Purpose</th>
+                            <th>Requested Date/Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in pending_visits %}
+                        <tr>
+                            <td><span class="fw-bold">{{ v.tenant.first_name }}</span> (@{{ v.tenant.username }})</td>
+                            <td>{{ v.visitor.user.first_name }} {{ v.visitor.user.last_name }}</td>
+                            <td>{{ v.purpose }}<br><small class="text-muted">{{ v.number_of_accompanying_persons }} guests</small></td>
+                            <td>{{ v.visit_date|date:"M d, Y" }} <br> <small>{{ v.visit_time_slot }}</small></td>
+                            <td style="width: 250px;">
+                                <form method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="v_id" value="{{ v.id }}">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-sm btn-success fw-bold"><i class="fa-solid fa-check me-1"></i> Approve</button>
+                                </form>
+                                <form method="POST" class="d-inline ms-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="v_id" value="{{ v.id }}">
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="let reason=prompt('Reason for rejection?'); if(reason) { this.nextElementSibling.value=reason; this.parentElement.submit(); }"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                    <input type="hidden" name="reason" value="">
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted p-4 border-0">No pending visit requests requiring your approval.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History -->
+<div class="row">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-0">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left text-secondary me-2"></i>Recent Visit History</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student</th>
+                            <th>Visitor</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in history %}
+                        <tr>
+                            <td>{{ h.tenant.first_name }}</td>
+                            <td>{{ h.visitor.user.first_name }} {{ h.visitor.user.last_name }}</td>
+                            <td>{{ h.visit_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if h.request_status == 'approved' %}
+                                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i> Approved</span>
+                                {% elif h.request_status == 'rejected' %}
+                                    <span class="badge bg-danger"><i class="fa-solid fa-xmark me-1"></i> Rejected</span>
+                                    <small class="d-block mt-1 text-muted">{{ h.rejection_reason }}</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted p-3">No recent visits.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

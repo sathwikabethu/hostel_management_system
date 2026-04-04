@@ -85,6 +85,97 @@
 </div>
 
 <div class="row g-4 mb-5">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-top border-info border-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-user-clock text-info me-2"></i>Pending Registrations</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Join Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in pending_users %}
+                        <tr>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.first_name }} {{ u.last_name }}</td>
+                            <td><span class="badge bg-secondary">{% if u.is_tenant %}Tenant{% elif u.is_parent %}Parent{% else %}Other{% endif %}</span></td>
+                            <td>{{ u.date_joined|date:"M d, Y" }}</td>
+                            <td style="width: 250px;">
+                                <form method="POST" action="{% url 'approve_user' u.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-sm btn-success fw-bold"><i class="fa-solid fa-check me-1"></i> Approve</button>
+                                </form>
+                                <form method="POST" action="{% url 'approve_user' u.id %}" onsubmit="return confirm('Reject this registration permanently?');" class="d-inline ms-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted p-4 border-0">No pending account registrations at this time.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-top border-primary border-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-person-walking-luggage text-primary me-2"></i>Pending Visit Requests</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Visitor</th>
+                            <th>Tenant Host</th>
+                            <th>Purpose</th>
+                            <th>Requested Date/Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in pending_visits %}
+                        <tr>
+                            <td>{{ v.visitor.user.first_name }} {{ v.visitor.user.last_name }}</td>
+                            <td>{{ v.tenant.username }}</td>
+                            <td>{{ v.purpose }}<br><small class="text-muted">{{ v.number_of_accompanying_persons }} guests</small></td>
+                            <td>{{ v.visit_date|date:"M d, Y" }} <br> <small>{{ v.visit_time_slot }}</small></td>
+                            <td style="width: 250px;">
+                                <form method="POST" action="{% url 'approve_visit_request' v.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-sm btn-success fw-bold"><i class="fa-solid fa-check me-1"></i> Approve</button>
+                                </form>
+                                <form method="POST" action="{% url 'approve_visit_request' v.id %}" class="d-inline ms-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="let reason=prompt('Reason for rejection?'); if(reason) { this.nextElementSibling.value=reason; this.parentElement.submit(); }"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                    <input type="hidden" name="reason" value="">
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted p-4 border-0">No pending visit requests.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
     <div class="col-md-8">
         <div class="card p-4 h-100">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2 text-primary"></i>Recent Tenants</h5>
