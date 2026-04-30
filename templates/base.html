@@ -30,11 +30,11 @@
             padding: 1rem 0;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        .navbar-brand, .nav-link { 
+        .navbar .navbar-brand, .navbar .nav-link { 
             color: white !important; 
             opacity: 0.9;
         }
-        .nav-link:hover { opacity: 1; }
+        .navbar .nav-link:hover { opacity: 1; }
         .navbar-brand {
             font-weight: 800; 
             font-size: 1.5rem;
@@ -110,17 +110,7 @@
             display: inline-block;
             margin-bottom: 2rem;
         }
-        h2::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: -8px;
-            width: 50%;
-            height: 4px;
-            background: var(--primary);
-            border-radius: 2px;
-        }
-        
+    
         /* Custom Inputs */
         .form-control, .form-select {
             border-radius: 8px;
@@ -166,8 +156,14 @@
     <div class="collapse navbar-collapse" id="navbars">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         {% if user.is_authenticated %}
+            <li class="nav-item me-4 d-flex align-items-center">
+                <a class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" href="{% if user.is_admin or user.is_superuser %}{% url 'admin_dashboard' %}{% else %}{% url 'tenant_dashboard' %}{% endif %}"><i class="fa-solid fa-gauge me-1"></i> Dashboard</a>
+            </li>
             <li class="nav-item me-3 d-flex align-items-center">
                 <span class="nav-link fw-bold text-dark"><i class="fa-solid fa-circle-user me-1 text-primary"></i> {{ user.username }}</span>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-warning" href="{% url 'change_password' %}"><i class="fa-solid fa-key"></i> Change Password</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>

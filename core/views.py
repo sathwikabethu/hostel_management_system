@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib import messages
 from django.db.models import Sum
 from .forms import TenantRegistrationForm, ParentRegistrationForm, VisitorRegistrationForm
@@ -47,6 +47,16 @@ def register_visitor_view(request):
     return render(request, 'auth/register_visitor.html', {'form': form})
 
 def login_view(request):
+    if request.user.is_authenticated:
+        if request.user.role == 'admin' or request.user.is_superuser:
+            return redirect('admin_dashboard')
+        elif request.user.role == 'parent':
+            return redirect('parent_dashboard')
+        elif request.user.role == 'visitor':
+            return redirect('visitor_dashboard')
+        else:
+            return redirect('tenant_dashboard')
+            
     if request.method == 'POST':
         u = request.POST.get('username')
         p = request.POST.get('password')
@@ -76,6 +86,28 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+@login_required
+def change_password_view(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)
+            messages.success(request, 'Your password was successfully updated!')
+            if request.user.role == 'admin' or request.user.is_superuser:
+                return redirect('admin_dashboard')
+            elif request.user.role == 'parent':
+                return redirect('parent_dashboard')
+            elif request.user.role == 'visitor':
+                return redirect('visitor_dashboard')
+            else:
+                return redirect('tenant_dashboard')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(user=request.user)
+    return render(request, 'auth/change_password.html', {'form': form})
 
 def home_view(request):
     return render(request, 'index.html')

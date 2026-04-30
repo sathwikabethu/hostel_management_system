@@ -1,23 +1,80 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2 class="fw-bold mb-1"><i class="fa-solid fa-scale-balanced text-warning me-2"></i>Moderate Complaint Polls</h2>
+<style>
+    .custom-pills .nav-link {
+        border-radius: 50rem;
+        padding: 0.6rem 1.5rem;
+        color: #64748b !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-right: 0.5rem;
+        background: white;
+        border: 1px solid #e2e8f0;
+    }
+    .custom-pills .nav-link:hover {
+        background-color: #f8fafc;
+        color: var(--primary) !important;
+    }
+    .custom-pills .nav-link.active {
+        background-color: var(--primary);
+        color: white !important;
+        border-color: var(--primary);
+        box-shadow: 0 4px 6px -1px rgba(67, 56, 202, 0.3);
+    }
+    
+    .poll-card {
+        transition: all 0.2s ease-in-out;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+    }
+    .poll-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .list-card {
+        transition: all 0.2s ease;
+        border-left: 4px solid transparent;
+    }
+    .list-card:hover {
+        background-color: #f8fafc;
+        border-left-color: var(--primary);
+    }
+    
+    .empty-state {
+        padding: 4rem 2rem;
+        border-radius: 16px;
+        background: linear-gradient(145deg, #ffffff, #f1f5f9);
+        border: 1px dashed #cbd5e1;
+    }
+    
+    h2::after {
+        display: none !important;
+    }
+</style>
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1" style="border-bottom: none;"><i class="fa-solid fa-scale-balanced text-primary me-2"></i>Moderate Complaint Polls</h2>
         <p class="text-muted">Review, escalate, and resolve democratic tenant complaint polls.</p>
     </div>
 </div>
 
-<ul class="nav nav-tabs mb-4" id="pollAdminTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link fw-bold active text-danger" id="closed-tab" data-bs-toggle="tab" data-bs-target="#closed-polls" type="button" role="tab">Pending Action (Closed)</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link fw-bold" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-polls" type="button" role="tab">Active (Voting phase)</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link fw-bold text-muted" id="resolved-tab" data-bs-toggle="tab" data-bs-target="#resolved-polls" type="button" role="tab">Resolved / History</button>
-    </li>
-</ul>
+<div class="bg-light p-2 rounded-pill d-inline-block mb-4 shadow-sm">
+    <ul class="nav custom-pills" id="pollAdminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="closed-tab" data-bs-toggle="tab" data-bs-target="#closed-polls" type="button" role="tab"><i class="fa-solid fa-triangle-exclamation me-1"></i> Pending Action</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-polls" type="button" role="tab"><i class="fa-solid fa-person-booth me-1"></i> Active Voting</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="resolved-tab" data-bs-toggle="tab" data-bs-target="#resolved-polls" type="button" role="tab"><i class="fa-solid fa-clock-rotate-left me-1"></i> History</button>
+        </li>
+    </ul>
+</div>
 
 <div class="tab-content" id="pollAdminTabsContent">
     <!-- CLOSED POLLS (Requires Action) -->
@@ -25,127 +82,190 @@
         <div class="row g-4">
             {% for poll in closed_polls %}
             <div class="col-12">
-                <div class="card shadow-sm border-0 border-start border-5 {% if poll.priority_flag == 'high' %}border-danger{% elif poll.priority_flag == 'medium' %}border-warning{% elif poll.priority_flag == 'low' %}border-info{% else %}border-secondary{% endif %}">
-                    <div class="card-body">
+                <div class="poll-card border-start border-5 {% if poll.priority_flag == 'high' %}border-danger{% elif poll.priority_flag == 'medium' %}border-warning{% elif poll.priority_flag == 'low' %}border-info{% else %}border-secondary{% endif %}">
+                    <div class="card-body p-4">
                         <div class="row align-items-center">
                             <div class="col-md-7">
-                                <span class="badge {% if poll.priority_flag == 'high' %}bg-danger{% elif poll.priority_flag == 'medium' %}bg-warning text-dark{% else %}bg-secondary{% endif %} mb-2">Priority: {{ poll.priority_flag|title }}</span>
-                                <h4 class="fw-bold">{{ poll.complaint_title }}</h4>
-                                <p class="text-muted small mb-2">Raised by {{ poll.raised_by.username }} | Category: {{ poll.complaint_category }}</p>
-                                <p class="mb-3">{{ poll.complaint_description }}</p>
-                                <div class="bg-light p-3 rounded d-inline-block">
-                                    <span class="text-success fw-bold me-3"><i class="fa-solid fa-thumbs-up"></i> {{ poll.vote_yes_count }} Yes</span>
-                                    <span class="text-danger fw-bold"><i class="fa-solid fa-thumbs-down"></i> {{ poll.vote_no_count }} No</span>
+                                <div class="d-flex align-items-center mb-2 gap-2">
+                                    <span class="badge rounded-pill {% if poll.priority_flag == 'high' %}bg-danger{% elif poll.priority_flag == 'medium' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">Priority: {{ poll.priority_flag|title }}</span>
+                                    <span class="badge bg-light text-dark border"><i class="fa-solid fa-tag me-1"></i> {{ poll.complaint_category }}</span>
+                                </div>
+                                <h4 class="fw-bold mb-1">{{ poll.complaint_title }}</h4>
+                                <p class="text-muted small mb-3"><i class="fa-solid fa-user me-1"></i> Raised by <span class="fw-bold text-dark">{{ poll.raised_by.username }}</span></p>
+                                <p class="mb-3 text-secondary">{{ poll.complaint_description }}</p>
+                                
+                                <div class="bg-light p-2 rounded-3 d-inline-flex gap-4 border shadow-sm">
+                                    <div class="d-flex align-items-center text-success">
+                                        <i class="fa-solid fa-thumbs-up fs-4 me-2"></i>
+                                        <div>
+                                            <div class="fw-bold fs-5 lh-1">{{ poll.vote_yes_count }}</div>
+                                            <small class="text-muted" style="font-size:0.7rem;">YES VOTES</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center text-danger">
+                                        <i class="fa-solid fa-thumbs-down fs-4 me-2"></i>
+                                        <div>
+                                            <div class="fw-bold fs-5 lh-1">{{ poll.vote_no_count }}</div>
+                                            <small class="text-muted" style="font-size:0.7rem;">NO VOTES</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-5 mt-3 mt-md-0 d-flex flex-column gap-2">
-                                <!-- Action Forms -->
-                                <div class="btn-group w-100 shadow-sm" role="group">
-                                    <button type="button" class="btn btn-outline-success fw-bold" onclick="document.getElementById('resolvePanel{{ poll.id }}').classList.toggle('d-none'); document.getElementById('dismissPanel{{ poll.id }}').classList.add('d-none');"><i class="fa-solid fa-check me-1"></i> Resolve</button>
-                                    <button type="button" class="btn btn-outline-danger fw-bold" onclick="document.getElementById('dismissPanel{{ poll.id }}').classList.toggle('d-none'); document.getElementById('resolvePanel{{ poll.id }}').classList.add('d-none');"><i class="fa-solid fa-xmark me-1"></i> Dismiss</button>
-                                </div>
-                                <form method="POST">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="poll_id" value="{{ poll.id }}">
-                                    <input type="hidden" name="action" value="escalate">
-                                    <button type="submit" class="btn btn-outline-secondary w-100 mt-2" onclick="return confirm('Escalate this to Owners?')"><i class="fa-solid fa-arrow-up-right-dots me-1"></i> Escalate Internally</button>
-                                </form>
-                                
-                                <!-- Modals/Panels for actions -->
-                                <div id="resolvePanel{{ poll.id }}" class="d-none mt-2">
-                                    <form method="POST" class="border p-3 rounded bg-light">
+                            
+                            <div class="col-md-5 mt-4 mt-md-0">
+                                <div class="bg-light rounded-4 p-3 border">
+                                    <h6 class="fw-bold text-center mb-3">Admin Actions</h6>
+                                    <!-- Action Forms -->
+                                    <div class="d-flex gap-2 w-100 mb-2">
+                                        <button type="button" class="btn btn-success flex-fill fw-bold" onclick="document.getElementById('resolvePanel{{ poll.id }}').classList.remove('d-none'); document.getElementById('dismissPanel{{ poll.id }}').classList.add('d-none');"><i class="fa-solid fa-check me-1"></i> Resolve</button>
+                                        <button type="button" class="btn btn-outline-danger flex-fill fw-bold bg-white" onclick="document.getElementById('dismissPanel{{ poll.id }}').classList.remove('d-none'); document.getElementById('resolvePanel{{ poll.id }}').classList.add('d-none');"><i class="fa-solid fa-xmark me-1"></i> Dismiss</button>
+                                    </div>
+                                    <form method="POST">
                                         {% csrf_token %}
                                         <input type="hidden" name="poll_id" value="{{ poll.id }}">
-                                        <input type="hidden" name="action" value="resolve">
-                                        <label class="form-label small fw-bold text-success">Resolution Action Note (Min 20 chars)</label>
-                                        <textarea name="admin_action_note" class="form-control form-control-sm mb-2" required minlength="20" placeholder="E.g. Sent maintenance team to fix elevator..."></textarea>
-                                        <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Submit Resolution</button>
+                                        <input type="hidden" name="action" value="escalate">
+                                        <button type="submit" class="btn btn-outline-secondary w-100 bg-white" onclick="return confirm('Escalate this to Owners?')"><i class="fa-solid fa-arrow-up-right-dots me-1"></i> Escalate Internally</button>
                                     </form>
+                                    
+                                    <!-- Modals/Panels for actions -->
+                                    <div id="resolvePanel{{ poll.id }}" class="d-none mt-3">
+                                        <form method="POST" class="border p-3 rounded-3 bg-white shadow-sm border-success">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="poll_id" value="{{ poll.id }}">
+                                            <input type="hidden" name="action" value="resolve">
+                                            <label class="form-label small fw-bold text-success"><i class="fa-solid fa-clipboard-check me-1"></i> Resolution Note (Min 20 chars)</label>
+                                            <textarea name="admin_action_note" class="form-control mb-3" rows="2" required minlength="20" placeholder="E.g. Sent maintenance team to fix elevator..."></textarea>
+                                            <button type="submit" class="btn btn-success w-100 fw-bold">Submit Resolution</button>
+                                        </form>
+                                    </div>
+                                    
+                                    <div id="dismissPanel{{ poll.id }}" class="d-none mt-3">
+                                        <form method="POST" class="border p-3 rounded-3 bg-white shadow-sm border-danger">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="poll_id" value="{{ poll.id }}">
+                                            <input type="hidden" name="action" value="dismiss">
+                                            <label class="form-label small fw-bold text-danger"><i class="fa-solid fa-ban me-1"></i> Dismissal Reason</label>
+                                            <textarea name="dismissal_reason" class="form-control mb-3" rows="2" required placeholder="E.g. Upon inspection, no issue was found."></textarea>
+                                            <button type="submit" class="btn btn-danger w-100 fw-bold">Dismiss Poll</button>
+                                        </form>
+                                    </div>
                                 </div>
-                                
-                                <div id="dismissPanel{{ poll.id }}" class="d-none mt-2">
-                                    <form method="POST" class="border p-3 rounded bg-light">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="poll_id" value="{{ poll.id }}">
-                                        <input type="hidden" name="action" value="dismiss">
-                                        <label class="form-label small fw-bold text-danger">Dismissal Reason</label>
-                                        <textarea name="dismissal_reason" class="form-control form-control-sm mb-2" required placeholder="E.g. Upon inspection, no issue was found."></textarea>
-                                        <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold">Dismiss Poll</button>
-                                    </form>
-                                </div>
-
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="col-12 text-center p-5 text-muted"><h4><i class="fa-solid fa-clipboard-check text-success fs-1 mb-3"></i><br>All caught up!</h4>No closed polls pending action.</div>
+            <div class="col-12">
+                <div class="empty-state text-center">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle" style="width: 80px; height: 80px;">
+                            <i class="fa-solid fa-clipboard-check fa-2x"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-dark">All caught up!</h3>
+                    <p class="text-muted mb-0">There are no closed polls pending your action.</p>
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
 
     <!-- ACTIVE POLLS -->
     <div class="tab-pane fade" id="active-polls" role="tabpanel">
-        <div class="table-responsive">
-            <table class="table align-middle bg-white shadow-sm rounded">
-                <thead class="table-light">
-                    <tr>
-                        <th>Poll Title</th>
-                        <th>Category</th>
-                        <th>Raised By</th>
-                        <th>Closes At</th>
-                        <th>Votes Gathered</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for poll in active_polls %}
-                    <tr>
-                        <td><strong>{{ poll.complaint_title }}</strong></td>
-                        <td>{{ poll.complaint_category }}</td>
-                        <td>{{ poll.raised_by.username }}</td>
-                        <td>{{ poll.closes_at|timeuntil }} left</td>
-                        <td><span class="badge bg-primary px-3 py-2 fs-6">{{ poll.vote_yes_count|add:poll.vote_no_count }}</span></td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="5" class="text-center p-4 text-muted">No active polls are currently voting.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            {% if active_polls %}
+            <div class="card-header bg-white border-bottom p-4">
+                <h5 class="fw-bold mb-0">Currently Voting</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for poll in active_polls %}
+                <div class="list-group-item list-card p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-5 mb-2 mb-md-0">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge bg-light text-dark border">{{ poll.complaint_category }}</span>
+                            </div>
+                            <h5 class="fw-bold mb-1">{{ poll.complaint_title }}</h5>
+                            <small class="text-muted">Raised by <strong>{{ poll.raised_by.username }}</strong></small>
+                        </div>
+                        <div class="col-md-4 mb-2 mb-md-0 text-md-center">
+                            <div class="d-inline-flex flex-column bg-light p-2 rounded px-3 border shadow-sm">
+                                <span class="text-muted small fw-bold mb-1"><i class="fa-regular fa-clock me-1"></i> Ends In</span>
+                                <span class="fw-bold text-primary">{{ poll.closes_at|timeuntil }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            <div class="d-inline-flex flex-column align-items-center">
+                                <span class="fs-3 fw-bold text-dark lh-1">{{ poll.vote_yes_count|add:poll.vote_no_count }}</span>
+                                <span class="small text-muted fw-bold">TOTAL VOTES</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state text-center m-4">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 80px; height: 80px;">
+                        <i class="fa-solid fa-person-booth fa-2x"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold text-dark">No Active Polls</h4>
+                <p class="text-muted mb-0">Tenants are not currently voting on any issues.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 
     <!-- RESOLVED / HISTORY -->
     <div class="tab-pane fade" id="resolved-polls" role="tabpanel">
-        <div class="table-responsive">
-            <table class="table align-middle bg-white shadow-sm rounded">
-                <thead class="table-light">
-                    <tr>
-                        <th>Title</th>
-                        <th>Category</th>
-                        <th>Total Votes</th>
-                        <th>Status</th>
-                        <th>Reviewed By</th>
-                        <th>Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for poll in resolved_polls %}
-                    <tr>
-                        <td><strong>{{ poll.complaint_title }}</strong></td>
-                        <td>{{ poll.complaint_category }}</td>
-                        <td>{{ poll.vote_yes_count|add:poll.vote_no_count }}</td>
-                        <td>
-                            <span class="badge {% if poll.poll_status == 'resolved' %}bg-success{% elif poll.poll_status == 'dismissed' %}bg-danger{% else %}bg-secondary{% endif %}">{{ poll.poll_status|title }}</span>
-                        </td>
-                        <td>{{ poll.resolved_by.username|default:"System" }}</td>
-                        <td style="max-width:300px;" class="text-truncate">{{ poll.admin_action_note|default:"N/A" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="6" class="text-center p-4 text-muted">No historical polls exist.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            {% if resolved_polls %}
+            <div class="card-header bg-white border-bottom p-4">
+                <h5 class="fw-bold mb-0">Historical Polls</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for poll in resolved_polls %}
+                <div class="list-group-item list-card p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <h6 class="fw-bold mb-1">{{ poll.complaint_title }}</h6>
+                            <span class="badge bg-light text-dark border">{{ poll.complaint_category }}</span>
+                            <span class="ms-2 small text-muted"><i class="fa-solid fa-users me-1"></i> {{ poll.vote_yes_count|add:poll.vote_no_count }} votes</span>
+                        </div>
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            {% if poll.poll_status == 'resolved' %}
+                                <span class="badge rounded-pill bg-success px-3 py-2"><i class="fa-solid fa-check me-1"></i> Resolved</span>
+                            {% elif poll.poll_status == 'dismissed' %}
+                                <span class="badge rounded-pill bg-danger px-3 py-2"><i class="fa-solid fa-xmark me-1"></i> Dismissed</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-secondary px-3 py-2">{{ poll.poll_status|title }}</span>
+                            {% endif %}
+                            <div class="small text-muted mt-2">By: {{ poll.resolved_by.username|default:"System" }}</div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="bg-light p-3 rounded-3 border h-100">
+                                <span class="small fw-bold text-muted d-block mb-1">Admin Note:</span>
+                                <p class="mb-0 small text-dark">{{ poll.admin_action_note|default:"N/A" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state text-center m-4">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-secondary bg-opacity-10 text-secondary rounded-circle" style="width: 80px; height: 80px;">
+                        <i class="fa-solid fa-clock-rotate-left fa-2x"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold text-dark">No History Yet</h4>
+                <p class="text-muted mb-0">Resolved and dismissed polls will appear here.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

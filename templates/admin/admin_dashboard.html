@@ -1,85 +1,113 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row mb-4">
+<style>
+    h2::after {
+        display: none !important;
+    }
+    .feature-card {
+        text-decoration: none;
+    }
+    .feature-card .card {
+        border-radius: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #ffffff;
+    }
+    .feature-card:hover .card {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    }
+    .stat-card {
+        border-radius: 16px;
+        border: none;
+        background: #fff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+    }
+</style>
+
+<div class="row mb-5 align-items-center">
     <div class="col-12">
-        <h2 class="fw-bold mb-1">Admin Dashboard</h2>
-        <p class="text-muted">Welcome, Administrator. Here is your hostel operations overview.</p>
+        <h2 class="fw-bold mb-1" style="border-bottom: none;"><i class="fa-solid fa-chart-line text-primary me-2"></i>Admin Dashboard</h2>
+        <p class="text-muted fs-5">Welcome, Administrator. Here is your hostel operations overview.</p>
     </div>
 </div>
 
 <!-- Quick Admin Controls -->
 <h4 class="fw-bold mb-3"><i class="fa-solid fa-shapes text-secondary me-2"></i>Quick Controls</h4>
-<div class="row g-3 mb-5">
-    <div class="col-6 col-md-4 col-lg-2">
-        <a href="{% url 'manage_rooms' %}" class="feature-card">
-            <div class="card py-3 text-center h-100 feature-primary shadow-sm border-0">
-                <div class="feature-icon mb-2"><i class="fa-solid fa-bed"></i></div>
-                <h6 class="fw-bold mb-0">Rooms</h6>
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4 mb-5">
+    <div class="col">
+        <div onclick="window.location.href='{% url 'manage_rooms' %}'" class="feature-card" style="cursor: pointer;">
+            <div class="card py-4 text-center h-100 feature-primary shadow-sm border-0">
+                <div class="feature-icon mb-3"><i class="fa-solid fa-bed"></i></div>
+                <h6 class="fw-bold mb-0 text-dark">Rooms</h6>
             </div>
-        </a>
+        </div>
     </div>
-    <div class="col-6 col-md-4 col-lg-2">
-        <a href="{% url 'manage_payments' %}" class="feature-card">
-            <div class="card py-3 text-center h-100 feature-success shadow-sm border-0">
-                <div class="feature-icon mb-2"><i class="fa-solid fa-money-bill-wave"></i></div>
-                <h6 class="fw-bold mb-0">Payments</h6>
+    <div class="col">
+        <div onclick="window.location.href='{% url 'manage_payments' %}'" class="feature-card" style="cursor: pointer;">
+            <div class="card py-4 text-center h-100 feature-success shadow-sm border-0">
+                <div class="feature-icon mb-3"><i class="fa-solid fa-money-bill-wave"></i></div>
+                <h6 class="fw-bold mb-0 text-dark">Payments</h6>
             </div>
-        </a>
+        </div>
     </div>
-    <div class="col-6 col-md-4 col-lg-3">
-        <a href="{% url 'manage_complaints' %}" class="feature-card">
-            <div class="card py-3 text-center h-100 feature-danger shadow-sm border-0">
-                <div class="feature-icon mb-2"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <h6 class="fw-bold mb-0">Complaints</h6>
+    <div class="col">
+        <div onclick="window.location.href='{% url 'manage_complaints' %}'" class="feature-card" style="cursor: pointer;">
+            <div class="card py-4 text-center h-100 feature-danger shadow-sm border-0">
+                <div class="feature-icon mb-3"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <h6 class="fw-bold mb-0 text-dark">Complaints</h6>
             </div>
-        </a>
+        </div>
     </div>
-    <div class="col-6 col-md-6 col-lg-3">
-        <a href="{% url 'manage_visitors' %}" class="feature-card">
-            <div class="card py-3 text-center h-100 feature-info shadow-sm border-0">
-                <div class="feature-icon mb-2"><i class="fa-solid fa-person-walking-luggage"></i></div>
-                <h6 class="fw-bold mb-0">Visitors</h6>
+    <div class="col">
+        <div onclick="window.location.href='{% url 'manage_visitors' %}'" class="feature-card" style="cursor: pointer;">
+            <div class="card py-4 text-center h-100 feature-info shadow-sm border-0">
+                <div class="feature-icon mb-3"><i class="fa-solid fa-person-walking-luggage"></i></div>
+                <h6 class="fw-bold mb-0 text-dark">Visitors</h6>
             </div>
-        </a>
+        </div>
     </div>
-    <div class="col-12 col-md-6 col-lg-2">
-        <a href="{% url 'manage_menu' %}" class="feature-card">
-            <div class="card py-3 text-center h-100 feature-warning shadow-sm border-0">
-                <div class="feature-icon mb-2"><i class="fa-solid fa-utensils"></i></div>
-                <h6 class="fw-bold mb-0">Menu</h6>
+    <div class="col">
+        <div onclick="window.location.href='{% url 'manage_menu' %}'" class="feature-card" style="cursor: pointer;">
+            <div class="card py-4 text-center h-100 feature-warning shadow-sm border-0">
+                <div class="feature-icon mb-3"><i class="fa-solid fa-utensils"></i></div>
+                <h6 class="fw-bold mb-0 text-dark">Menu</h6>
             </div>
-        </a>
+        </div>
     </div>
 </div>
 
 <h4 class="fw-bold mb-3"><i class="fa-solid fa-chart-pie text-secondary me-2"></i>Statistics</h4>
-<div class="row g-4 mb-4">
+<div class="row g-4 mb-5">
     <div class="col-md-3">
-        <div class="card p-3 text-center border-top border-primary border-4 h-100">
-            <div class="text-primary display-5 mb-2"><i class="fa-solid fa-users"></i></div>
-            <h6 class="fw-bold text-uppercase text-muted">Total Tenants</h6>
-            <h2 class="fw-bold text-dark">{{ stats.tenants_count|default:"0" }}</h2>
+        <div class="card stat-card p-4 text-center border-top border-primary border-4 h-100">
+            <div class="text-primary display-5 mb-3"><i class="fa-solid fa-users"></i></div>
+            <h6 class="fw-bold text-uppercase text-muted mb-1">Total Tenants</h6>
+            <h2 class="fw-bold text-dark mb-0" style="font-size: 2.5rem;">{{ stats.tenants_count|default:"0" }}</h2>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card p-3 text-center border-top border-success border-4 h-100">
-            <div class="text-success display-5 mb-2"><i class="fa-solid fa-money-bill-wave"></i></div>
-            <h6 class="fw-bold text-uppercase text-muted">Fees Collected</h6>
-            <h2 class="fw-bold text-dark">₹{{ stats.revenue|default:"0" }}</h2>
+        <div class="card stat-card p-4 text-center border-top border-success border-4 h-100">
+            <div class="text-success display-5 mb-3"><i class="fa-solid fa-money-bill-wave"></i></div>
+            <h6 class="fw-bold text-uppercase text-muted mb-1">Fees Collected</h6>
+            <h2 class="fw-bold text-dark mb-0" style="font-size: 2.5rem;">₹{{ stats.revenue|default:"0" }}</h2>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card p-3 text-center border-top border-warning border-4 h-100">
-            <div class="text-warning display-5 mb-2"><i class="fa-solid fa-circle-exclamation"></i></div>
-            <h6 class="fw-bold text-uppercase text-muted">Open Complaints</h6>
-            <h2 class="fw-bold text-dark">{{ stats.complaints_count|default:"0" }}</h2>
+        <div class="card stat-card p-4 text-center border-top border-warning border-4 h-100">
+            <div class="text-warning display-5 mb-3"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <h6 class="fw-bold text-uppercase text-muted mb-1">Open Complaints</h6>
+            <h2 class="fw-bold text-dark mb-0" style="font-size: 2.5rem;">{{ stats.complaints_count|default:"0" }}</h2>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card p-3 text-center border-top border-info border-4 h-100">
-            <div class="text-info display-5 mb-2"><i class="fa-solid fa-bed"></i></div>
-            <h6 class="fw-bold text-uppercase text-muted">Total Rooms</h6>
-            <h2 class="fw-bold text-dark">{{ stats.rooms_count|default:"0" }}</h2>
+        <div class="card stat-card p-4 text-center border-top border-info border-4 h-100">
+            <div class="text-info display-5 mb-3"><i class="fa-solid fa-bed"></i></div>
+            <h6 class="fw-bold text-uppercase text-muted mb-1">Total Rooms</h6>
+            <h2 class="fw-bold text-dark mb-0" style="font-size: 2.5rem;">{{ stats.rooms_count|default:"0" }}</h2>
         </div>
     </div>
 </div>

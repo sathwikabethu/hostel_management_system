@@ -1,96 +1,179 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row align-items-center mb-4">
-    <div class="col">
-        <h2 class="fw-bold mb-0"><i class="fa-solid fa-list-check text-success me-2"></i>Visitor Check-In / Check-Out Log</h2>
+<style>
+    .visitor-card {
+        transition: all 0.2s ease-in-out;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+    }
+    .visitor-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .list-card {
+        transition: all 0.2s ease;
+        border-left: 4px solid transparent;
+    }
+    .list-card:hover {
+        background-color: #f8fafc;
+        border-left-color: var(--primary);
+    }
+    
+    .empty-state {
+        padding: 3rem 2rem;
+        border-radius: 16px;
+        background: linear-gradient(145deg, #ffffff, #f1f5f9);
+        border: 1px dashed #cbd5e1;
+    }
+
+    h2::after {
+        display: none !important;
+    }
+</style>
+
+<div class="row align-items-center mb-5">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1" style="border-bottom: none;"><i class="fa-solid fa-list-check text-success me-2"></i>Visitor Log</h2>
         <p class="text-muted">Manage arrivals and departures for approved visitors.</p>
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- Currently In (Checked In) -->
+<div class="row g-4 mb-5">
+    <!-- Expected Today -->
     <div class="col-md-6">
-        <div class="card p-3 shadow-sm border-top border-warning border-4 h-100">
-            <h5 class="fw-bold mb-3"><i class="fa-solid fa-person-shelter text-warning me-2"></i>Visitors Currently Inside</h5>
-            <ul class="list-group list-group-flush">
-                {% for log in currently_in %}
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-0 fw-bold">{{ log.visit_request.visitor.user.first_name }} {{ log.visit_request.visitor.user.last_name }}</h6>
-                        <small class="text-muted">Host: {{ log.visit_request.tenant.username }} | In: {{ log.check_in_time|date:"h:i A" }}</small>
+        <div class="card p-0 shadow-sm border-0 border-top border-primary border-4 h-100 rounded-4 overflow-hidden">
+            <div class="bg-light p-3 border-bottom d-flex align-items-center">
+                <i class="fa-solid fa-calendar-day text-primary fs-4 me-2"></i>
+                <h5 class="fw-bold mb-0">Expected Arrivals Today</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for log in expected_today %}
+                    <li class="list-group-item p-4 visitor-card border-0 border-bottom rounded-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold fs-5">{{ log.visit_request.visitor.user.first_name }} {{ log.visit_request.visitor.user.last_name }}</h6>
+                                <p class="text-muted small mb-1"><i class="fa-solid fa-user-tag me-1"></i> Host: <span class="text-dark fw-bold">{{ log.visit_request.tenant.username }}</span></p>
+                                <p class="text-primary small mb-0 fw-bold"><i class="fa-regular fa-clock me-1"></i> Expected: {{ log.visit_request.visit_time_slot }}</p>
+                            </div>
+                            <form method="POST" class="ms-3">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="check_in">
+                                <input type="hidden" name="log_id" value="{{ log.id }}">
+                                <button type="submit" class="btn btn-outline-success fw-bold px-3 py-2 shadow-sm rounded-pill"><i class="fa-solid fa-building-user me-1"></i> Check In</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <div class="empty-state text-center m-4">
+                        <div class="mb-3">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 70px; height: 70px;">
+                                <i class="fa-solid fa-calendar-xmark fa-2x"></i>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold text-dark">No Arrivals Pending</h5>
+                        <p class="text-muted small mb-0">No approved visits are expected for today.</p>
                     </div>
-                    <form method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="check_out">
-                        <input type="hidden" name="log_id" value="{{ log.id }}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger shadow-sm"><i class="fa-solid fa-person-walking-arrow-right me-1"></i>Check Out</button>
-                    </form>
-                </li>
-                {% empty %}
-                <div class="text-center text-muted p-4"><i class="fa-solid fa-building-circle-check fs-2 text-light mb-2"></i><br>No visitors currently inside.</div>
-                {% endfor %}
-            </ul>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
     </div>
 
-    <!-- Expected Today -->
+    <!-- Currently In (Checked In) -->
     <div class="col-md-6">
-        <div class="card p-3 shadow-sm border-top border-primary border-4 h-100">
-            <h5 class="fw-bold mb-3"><i class="fa-solid fa-calendar-day text-primary me-2"></i>Expected Arrivals Today</h5>
-            <ul class="list-group list-group-flush">
-                {% for log in expected_today %}
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-0 fw-bold">{{ log.visit_request.visitor.user.first_name }} {{ log.visit_request.visitor.user.last_name }}</h6>
-                        <small class="text-muted">Host: {{ log.visit_request.tenant.username }} | Expected: {{ log.visit_request.visit_time_slot }}</small>
+        <div class="card p-0 shadow-sm border-0 border-top border-warning border-4 h-100 rounded-4 overflow-hidden">
+            <div class="bg-light p-3 border-bottom d-flex align-items-center">
+                <i class="fa-solid fa-person-shelter text-warning fs-4 me-2"></i>
+                <h5 class="fw-bold mb-0">Visitors Currently Inside</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for log in currently_in %}
+                    <li class="list-group-item p-4 visitor-card border-0 border-bottom rounded-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold fs-5">{{ log.visit_request.visitor.user.first_name }} {{ log.visit_request.visitor.user.last_name }}</h6>
+                                <p class="text-muted small mb-1"><i class="fa-solid fa-user-tag me-1"></i> Host: <span class="text-dark fw-bold">{{ log.visit_request.tenant.username }}</span></p>
+                                <p class="text-warning small mb-0 fw-bold"><i class="fa-solid fa-arrow-right-to-bracket me-1"></i> In: {{ log.check_in_time|date:"h:i A" }}</p>
+                            </div>
+                            <form method="POST" class="ms-3">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="check_out">
+                                <input type="hidden" name="log_id" value="{{ log.id }}">
+                                <button type="submit" class="btn btn-warning text-dark fw-bold px-3 py-2 shadow-sm rounded-pill"><i class="fa-solid fa-person-walking-arrow-right me-1"></i> Check Out</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <div class="empty-state text-center m-4">
+                        <div class="mb-3">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle" style="width: 70px; height: 70px;">
+                                <i class="fa-solid fa-building-circle-check fa-2x"></i>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold text-dark">All Clear!</h5>
+                        <p class="text-muted small mb-0">There are no visitors currently inside the hostel.</p>
                     </div>
-                    <form method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="check_in">
-                        <input type="hidden" name="log_id" value="{{ log.id }}">
-                        <button type="submit" class="btn btn-sm btn-outline-success shadow-sm"><i class="fa-solid fa-building-user me-1"></i>Check In</button>
-                    </form>
-                </li>
-                {% empty %}
-                <div class="text-center text-muted p-4"><i class="fa-solid fa-calendar-xmark fs-2 text-light mb-2"></i><br>No approved visits pending for today.</div>
-                {% endfor %}
-            </ul>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row mt-5">
+<div class="row">
     <div class="col-12">
-        <div class="card p-4 shadow-sm border-0">
-            <h5 class="fw-bold mb-3"><i class="fa-solid fa-book text-secondary me-2"></i>Past Log Ledger</h5>
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Date</th>
-                            <th>Visitor</th>
-                            <th>Host Tenant</th>
-                            <th>In</th>
-                            <th>Out</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for log in past_logs %}
-                        <tr>
-                            <td>{{ log.visit_request.visit_date|date:"M d, Y" }}</td>
-                            <td>{{ log.visit_request.visitor.user.first_name }} {{ log.visit_request.visitor.user.last_name }}</td>
-                            <td>{{ log.visit_request.tenant.username }}</td>
-                            <td>{{ log.check_in_time|date:"h:i A"|default:"-" }}</td>
-                            <td>{{ log.check_out_time|date:"h:i A"|default:"-" }}</td>
-                            <td><span class="badge bg-secondary">{{ log.log_status|title }}</span></td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="6" class="text-center text-muted p-3">No historical visitor logs found.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            {% if past_logs %}
+            <div class="card-header bg-white border-bottom p-4 d-flex align-items-center">
+                <i class="fa-solid fa-book text-secondary fs-4 me-2"></i>
+                <h5 class="fw-bold mb-0">Past Log Ledger</h5>
             </div>
+            <div class="list-group list-group-flush">
+                {% for log in past_logs %}
+                <div class="list-group-item list-card p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <span class="text-muted small fw-bold d-block mb-1"><i class="fa-regular fa-calendar me-1"></i> {{ log.visit_request.visit_date|date:"M d, Y" }}</span>
+                            <h6 class="fw-bold mb-0 fs-5">{{ log.visit_request.visitor.user.first_name }} {{ log.visit_request.visitor.user.last_name }}</h6>
+                        </div>
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <span class="text-muted small fw-bold d-block mb-1">Host Tenant</span>
+                            <span class="fw-bold text-dark"><i class="fa-solid fa-user text-secondary me-1"></i> {{ log.visit_request.tenant.username }}</span>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="d-flex gap-3">
+                                <div class="bg-light p-2 rounded px-3 border shadow-sm">
+                                    <span class="small text-muted fw-bold d-block">Time In</span>
+                                    <span class="fw-bold {% if log.check_in_time %}text-success{% else %}text-muted{% endif %}">{{ log.check_in_time|date:"h:i A"|default:"-" }}</span>
+                                </div>
+                                <div class="bg-light p-2 rounded px-3 border shadow-sm">
+                                    <span class="small text-muted fw-bold d-block">Time Out</span>
+                                    <span class="fw-bold {% if log.check_out_time %}text-warning{% else %}text-muted{% endif %}">{{ log.check_out_time|date:"h:i A"|default:"-" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-md-end">
+                            <span class="badge rounded-pill bg-secondary px-3 py-2">{{ log.log_status|title }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state text-center m-5">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-secondary bg-opacity-10 text-secondary rounded-circle" style="width: 80px; height: 80px;">
+                        <i class="fa-solid fa-clock-rotate-left fa-2x"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold text-dark">No Log History</h4>
+                <p class="text-muted mb-0">Past visitor check-ins and check-outs will be recorded here.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
