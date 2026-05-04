@@ -22,9 +22,11 @@ urlpatterns = [
     path('admin-dashboard/menu/', views.manage_menu, name='manage_menu'),
     path('admin-dashboard/payments/', views.manage_payments, name='manage_payments'),
     path('admin-dashboard/announcement/delete/<int:a_id>/', views.delete_announcement, name='delete_announcement'),
+    path('admin-dashboard/room-request/approve/<int:req_id>/', views.approve_room_request, name='approve_room_request'),
 
     # Tenant
     path('tenant-dashboard/', views.tenant_dashboard, name='tenant_dashboard'),
+    path('tenant-dashboard/rooms/', views.browse_rooms, name='browse_rooms'),
     
     # Parent
     path('parent-dashboard/', views.parent_dashboard, name='parent_dashboard'),

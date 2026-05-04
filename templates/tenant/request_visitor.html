@@ -36,12 +36,9 @@
                     <tbody>
                         {% for v in my_visitors %}
                         <tr>
-                            <td class="fw-bold">{{ v.visitor_name }}<br><small class="text-muted fw-normal">{{ v.purpose
-                                    }}</small></td>
+                            <td class="fw-bold">{{ v.visitor_name }}<br><small class="text-muted fw-normal">{{ v.purpose }}</small></td>
                             <td>{{ v.visit_date|date:"F d, Y" }}</td>
-                            <td><span
-                                    class="badge bg-{% if v.status == 'Pending' %}warning text-dark{% elif v.status == 'Approved' %}success{% else %}danger{% endif %}">{{
-                                    v.status }}</span></td>
+                            <td><span class="badge bg-{% if v.status == 'Pending' %}warning text-dark{% elif v.status == 'Approved' %}success{% else %}danger{% endif %}">{{ v.status }}</span></td>
                         </tr>
                         {% empty %}
                         <tr>

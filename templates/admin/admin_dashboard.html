@@ -204,6 +204,51 @@
 </div>
 
 <div class="row g-4 mb-5">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-top border-success border-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-hotel text-success me-2"></i>Pending Room Applications</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tenant</th>
+                            <th>Desired Room</th>
+                            <th>Room Type</th>
+                            <th>Applied Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in pending_room_requests %}
+                        <tr>
+                            <td><strong>{{ r.tenant.first_name }} {{ r.tenant.last_name }}</strong><br><small class="text-muted">@{{ r.tenant.username }}</small></td>
+                            <td><span class="badge bg-primary fs-6">Room {{ r.room.room_number }}</span></td>
+                            <td>{{ r.room.room_type }}</td>
+                            <td>{{ r.request_date|date:"M d, Y" }}</td>
+                            <td style="width: 250px;">
+                                <form method="POST" action="{% url 'approve_room_request' r.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-sm btn-success fw-bold"><i class="fa-solid fa-check me-1"></i> Approve</button>
+                                </form>
+                                <form method="POST" action="{% url 'approve_room_request' r.id %}" class="d-inline ms-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Reject this room application?');"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted p-4 border-0">No pending room applications.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
     <div class="col-md-8">
         <div class="card p-4 h-100">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2 text-primary"></i>Recent Tenants</h5>

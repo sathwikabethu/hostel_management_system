@@ -6,7 +6,7 @@ from django.db.models import Sum
 from .forms import TenantRegistrationForm, ParentRegistrationForm, VisitorRegistrationForm
 from django.contrib.auth.decorators import login_required
 from .decorators import admin_required, tenant_required, parent_required
-from .models import User, Room, Announcement, TenantProfile, FeePayment, VisitRequest, VisitorProfile, VisitLog, ComplaintPoll, PollVote, PollEvidence
+from .models import User, Room, RoomRequest, Announcement, TenantProfile, FeePayment, VisitRequest, VisitorProfile, VisitLog, ComplaintPoll, PollVote, PollEvidence
 from .utils import evaluate_active_polls
 from datetime import timedelta
 from django.utils import timezone
@@ -141,12 +141,14 @@ def admin_dashboard(request):
     recent_tenants = User.objects.filter(role='tenant', is_active=True).order_by('-date_joined')[:5]
     pending_users = User.objects.filter(is_active=False).order_by('-date_joined')
     pending_visits = VisitRequest.objects.filter(request_status='pending').order_by('visit_date')
+    pending_room_requests = RoomRequest.objects.filter(status='pending').order_by('-request_date')
     announcements = Announcement.objects.all().order_by('-date_posted')
     return render(request, 'admin/admin_dashboard.html', {
         'stats': stats, 
         'recent_tenants': recent_tenants,
         'pending_users': pending_users,
         'pending_visits': pending_visits,
+        'pending_room_requests': pending_room_requests,
         'announcements': announcements
     })
 
@@ -230,7 +232,8 @@ def manage_rooms(request):
         return redirect('manage_rooms')
 
     from django.db.models import F
-    available_rooms = Room.objects.filter(occupants__lt=F('capacity'))
+    requested_room_ids = RoomRequest.objects.filter(status='pending').values_list('room_id', flat=True)
+    available_rooms = Room.objects.filter(id__in=requested_room_ids, occupants__lt=F('capacity'))
     unassigned_tenants = User.objects.filter(role='tenant', tenant_profile__room__isnull=True)
 
     return render(request, 'admin/manage_rooms.html', {
@@ -327,11 +330,13 @@ def manage_visitors(request):
         return redirect('manage_visitors')
 
     today = date.today()
+    pending_requests = VisitRequest.objects.filter(request_status='pending').order_by('visit_date')
     expected_today = VisitLog.objects.filter(visit_request__visit_date=today, log_status='expected')
     currently_in = VisitLog.objects.filter(log_status='checked_in')
     past_logs = VisitLog.objects.exclude(log_status__in=['expected', 'checked_in']).order_by('-id')[:50]
 
     return render(request, 'admin/manage_visitors.html', {
+        'pending_requests': pending_requests,
         'expected_today': expected_today,
         'currently_in': currently_in,
         'past_logs': past_logs
@@ -618,7 +623,55 @@ def raise_complaint(request):
 @login_required
 @tenant_required
 def request_visitor(request):
-    return render(request, 'tenant/request_visitor.html', {'my_visitors': []})
+    if request.method == 'POST':
+        visitor_name = request.POST.get('name')
+        purpose = request.POST.get('purpose')
+        visit_date_str = request.POST.get('date')
+        
+        from datetime import datetime
+        import uuid
+        try:
+            visit_date = datetime.strptime(visit_date_str, '%Y-%m-%d').date()
+            if visit_date < datetime.now().date():
+                messages.error(request, "Visit date cannot be in the past.")
+            else:
+                unique_username = f"guest_{uuid.uuid4().hex[:8]}"
+                visitor_user = User.objects.create(
+                    username=unique_username,
+                    first_name=visitor_name,
+                    role='visitor',
+                    status='pending',
+                    is_active=False
+                )
+                visitor_profile = VisitorProfile.objects.create(
+                    user=visitor_user,
+                    tenant=request.user
+                )
+                VisitRequest.objects.create(
+                    visitor=visitor_profile,
+                    tenant=request.user,
+                    visit_date=visit_date,
+                    visit_time_slot='TBD',
+                    expected_duration='TBD',
+                    purpose=purpose,
+                    number_of_accompanying_persons=0
+                )
+                messages.success(request, "Visitor pass requested successfully.")
+                return redirect('request_visitor')
+        except Exception as e:
+            messages.error(request, f"Error creating request: {str(e)}")
+
+    raw_requests = VisitRequest.objects.filter(tenant=request.user).order_by('-requested_at')
+    my_visitors = []
+    for r in raw_requests:
+        my_visitors.append({
+            'visitor_name': r.visitor.user.first_name or r.visitor.user.username,
+            'purpose': r.purpose,
+            'visit_date': r.visit_date,
+            'status': r.get_request_status_display()
+        })
+
+    return render(request, 'tenant/request_visitor.html', {'my_visitors': my_visitors})
 
 @login_required
 @tenant_required
@@ -628,3 +681,60 @@ def view_menu(request):
     day_order = {'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
     menus = sorted(menus, key=lambda x: day_order.get(x.day, 8))
     return render(request, 'tenant/view_menu.html', {'menus': menus})
+@login_required
+@tenant_required
+def browse_rooms(request):
+    if request.method == 'POST':
+        room_id = request.POST.get('room_id')
+        room = get_object_or_404(Room, id=room_id)
+        
+        if RoomRequest.objects.filter(tenant=request.user, room=room, status='pending').exists():
+            messages.warning(request, f"You have already applied for Room {room.room_number}.")
+        else:
+            RoomRequest.objects.create(tenant=request.user, room=room)
+            messages.success(request, f"Application for Room {room.room_number} submitted!")
+        return redirect('browse_rooms')
+
+    from django.db.models import F
+    available_rooms = Room.objects.filter(occupants__lt=F('capacity'))
+    my_requests = RoomRequest.objects.filter(tenant=request.user).order_by('-request_date')
+    
+    return render(request, 'tenant/browse_rooms.html', {
+        'rooms': available_rooms,
+        'my_requests': my_requests
+    })
+
+@login_required
+@admin_required
+def approve_room_request(request, req_id):
+    if request.method == 'POST':
+        room_req = get_object_or_404(RoomRequest, id=req_id)
+        action = request.POST.get('action')
+        
+        if action == 'approve':
+            room = room_req.room
+            if room.occupants < room.capacity:
+                room_req.status = 'approved'
+                room_req.save()
+                
+                tenant_profile = room_req.tenant.tenant_profile
+                if tenant_profile.room:
+                    old_room = tenant_profile.room
+                    old_room.occupants = max(0, old_room.occupants - 1)
+                    old_room.save()
+                
+                tenant_profile.room = room
+                tenant_profile.save()
+                
+                room.occupants += 1
+                room.save()
+                
+                messages.success(request, f"Approved Room {room.room_number} for {room_req.tenant.username}")
+            else:
+                messages.error(request, "Room is already full!")
+        elif action == 'reject':
+            room_req.status = 'rejected'
+            room_req.save()
+            messages.success(request, f"Rejected Room request from {room_req.tenant.username}")
+            
+    return redirect('admin_dashboard')

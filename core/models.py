@@ -58,6 +58,20 @@ class Room(models.Model):
     def __str__(self):
         return f"Room {self.room_number}"
 
+class RoomRequest(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+    tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room_requests')
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    request_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    
+    def __str__(self):
+        return f"{self.tenant.username} - Room {self.room.room_number} ({self.status})"
+
 class TenantProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='tenant_profile')
     parent = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='child_tenants', limit_choices_to={'role': 'parent'})
