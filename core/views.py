@@ -6,7 +6,7 @@ from django.db.models import Sum
 from .forms import TenantRegistrationForm, ParentRegistrationForm, VisitorRegistrationForm
 from django.contrib.auth.decorators import login_required
 from .decorators import admin_required, tenant_required, parent_required
-from .models import User, Room, RoomRequest, Announcement, TenantProfile, FeePayment, VisitRequest, VisitorProfile, VisitLog, ComplaintPoll, PollVote, PollEvidence
+from .models import User, Room, RoomRequest, Announcement, TenantProfile, FeePayment, VisitRequest, VisitorProfile, VisitLog, ComplaintPoll, PollVote, PollEvidence, name_validator
 from .utils import evaluate_active_polls
 from datetime import timedelta
 from django.utils import timezone
@@ -632,6 +632,10 @@ def request_visitor(request):
         import uuid
         try:
             visit_date = datetime.strptime(visit_date_str, '%Y-%m-%d').date()
+            
+            # Validate name for XSS prevention
+            name_validator(visitor_name)
+            
             if visit_date < datetime.now().date():
                 messages.error(request, "Visit date cannot be in the past.")
             else:

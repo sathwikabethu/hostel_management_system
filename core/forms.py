@@ -1,10 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, TenantProfile, Room
+from django.core.validators import RegexValidator
+from .models import User, TenantProfile, Room, name_validator
 
 class TenantRegistrationForm(UserCreationForm):
-    first_name = forms.CharField(max_length=30, required=True)
-    last_name = forms.CharField(max_length=30, required=True)
+    first_name = forms.CharField(max_length=30, required=True, validators=[name_validator])
+    last_name = forms.CharField(max_length=30, required=True, validators=[name_validator])
     phone_number = forms.CharField(max_length=15, required=True)
 
     guardian_name = forms.CharField(max_length=100, required=True)
@@ -30,8 +31,8 @@ class TenantRegistrationForm(UserCreationForm):
         return user
 
 class ParentRegistrationForm(UserCreationForm):
-    first_name = forms.CharField(max_length=30, required=True)
-    last_name = forms.CharField(max_length=30, required=True)
+    first_name = forms.CharField(max_length=30, required=True, validators=[name_validator])
+    last_name = forms.CharField(max_length=30, required=True, validators=[name_validator])
     phone_number = forms.CharField(max_length=15, required=True)
     child_username = forms.CharField(max_length=150, required=True, help_text="Enter your child's (tenant's) username")
 
@@ -69,6 +70,15 @@ class VisitorRegistrationForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'password']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'validators': [name_validator]}),
+            'last_name': forms.TextInput(attrs={'validators': [name_validator]}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['first_name'].validators.append(name_validator)
+        self.fields['last_name'].validators.append(name_validator)
 
     def clean_tenant_username(self):
         username = self.cleaned_data.get('tenant_username')

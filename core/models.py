@@ -1,5 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
+
+# XSS Prevention Validator for Names
+name_validator = RegexValidator(
+    regex=r'^[a-zA-Z\s\-\']+$',
+    message='Name can only contain letters, spaces, hyphens, and apostrophes.'
+)
 
 class User(AbstractUser):
     ROLE_CHOICES = (
