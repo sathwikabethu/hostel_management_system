@@ -22,12 +22,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-u=vnwl_b9pue-k8ug!v#*77x1r$1s4on+nr@(-0kr^@ixf+43n'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-u=vnwl_b9pue-k8ug!v#*77x1r$1s4on+nr@(-0kr^@ixf+43n')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['.vercel.app', 'now.sh', '127.0.0.1', 'localhost', '.render.com']
+
+# Dynamically add specific hostnames if they exist in environment variables
+if os.environ.get('RENDER_EXTERNAL_URL'):
+    ALLOWED_HOSTS.append(os.environ.get('RENDER_EXTERNAL_URL').replace('https://', '').replace('http://', ''))
+if os.environ.get('VERCEL_URL'):
+    ALLOWED_HOSTS.append(os.environ.get('VERCEL_URL'))
+
+CSRF_TRUSTED_ORIGINS = ['https://*.vercel.app', 'https://*.onrender.com']
+if os.environ.get('RENDER_EXTERNAL_URL'):
+    CSRF_TRUSTED_ORIGINS.append(os.environ.get('RENDER_EXTERNAL_URL'))
+if os.environ.get('VERCEL_URL'):
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ.get('VERCEL_URL')}")
 
 
 # Application definition
@@ -76,6 +88,8 @@ WSGI_APPLICATION = 'hostel_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import shutil
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -90,6 +104,22 @@ if os.environ.get('DATABASE_URL'):
         conn_max_age=600,
         conn_health_checks=True,
     )
+elif 'VERCEL' in os.environ:
+    # On Vercel, copy the database to /tmp so it's writable
+    tmp_db = Path('/tmp/db.sqlite3')
+    if not tmp_db.exists():
+        src_db = BASE_DIR / 'db.sqlite3'
+        if src_db.exists():
+            try:
+                shutil.copy2(src_db, tmp_db)
+            except Exception as e:
+                print(f"Error copying database to /tmp: {e}")
+        else:
+            print("Source db.sqlite3 not found, a new database will be created in /tmp")
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': tmp_db,
+    }
 
 
 # Password validation
