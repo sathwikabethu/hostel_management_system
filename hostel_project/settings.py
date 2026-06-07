@@ -104,6 +104,9 @@ if os.environ.get('DATABASE_URL'):
         conn_max_age=600,
         conn_health_checks=True,
     )
+    # Remove 'pgbouncer' from OPTIONS as psycopg2 does not support it
+    if 'OPTIONS' in DATABASES['default']:
+        DATABASES['default']['OPTIONS'].pop('pgbouncer', None)
 elif 'VERCEL' in os.environ:
     # On Vercel, copy the database to /tmp so it's writable
     tmp_db = Path('/tmp/db.sqlite3')
