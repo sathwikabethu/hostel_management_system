@@ -18,7 +18,7 @@ except Exception as e:
 print("--- REGISTRATION ERROR TEST ---")
 try:
     data = {
-        'username': 'testuser123',
+        'username': 'testuser_unique_12',
         'password1': 'SomeStrongPassword123!',
         'password2': 'SomeStrongPassword123!',
         'first_name': 'Test',

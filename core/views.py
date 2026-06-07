@@ -12,41 +12,60 @@ from datetime import timedelta
 from django.utils import timezone
 # Auth Views
 def register_parent_view(request):
+    debug_error = None
     if request.method == 'POST':
         form = ParentRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            user.is_active = False
-            user.save()
-            messages.success(request, 'Registration successful. Please wait for admin approval.')
-            return redirect('login')
+        try:
+            if form.is_valid():
+                user = form.save()
+                user.is_active = False
+                user.save()
+                messages.success(request, 'Registration successful. Please wait for admin approval.')
+                return redirect('login')
+        except Exception as e:
+            import traceback
+            debug_error = f"Parent Registration Error: {str(e)}\n{traceback.format_exc()}"
+            messages.error(request, f"Server Error during registration: {str(e)}")
     else:
         form = ParentRegistrationForm()
-    return render(request, 'auth/register_parent.html', {'form': form})
+    return render(request, 'auth/register_parent.html', {'form': form, 'debug_error': debug_error})
 
 def register_view(request):
+    debug_error = None
     if request.method == 'POST':
         form = TenantRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            messages.success(request, 'Registration successful. Please wait for admin approval.')
-            return redirect('login')
+        try:
+            if form.is_valid():
+                user = form.save()
+                messages.success(request, 'Registration successful. Please wait for admin approval.')
+                return redirect('login')
+        except Exception as e:
+            import traceback
+            debug_error = f"Tenant Registration Error: {str(e)}\n{traceback.format_exc()}"
+            messages.error(request, f"Server Error during registration: {str(e)}")
     else:
         form = TenantRegistrationForm()
-    return render(request, 'auth/register.html', {'form': form})
+    return render(request, 'auth/register.html', {'form': form, 'debug_error': debug_error})
 
 def register_visitor_view(request):
+    debug_error = None
     if request.method == 'POST':
         form = VisitorRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            messages.success(request, 'Registration successful. Please wait for admin approval.')
-            return redirect('login')
+        try:
+            if form.is_valid():
+                user = form.save()
+                messages.success(request, 'Registration successful. Please wait for admin approval.')
+                return redirect('login')
+        except Exception as e:
+            import traceback
+            debug_error = f"Visitor Registration Error: {str(e)}\n{traceback.format_exc()}"
+            messages.error(request, f"Server Error during registration: {str(e)}")
     else:
         form = VisitorRegistrationForm()
-    return render(request, 'auth/register_visitor.html', {'form': form})
+    return render(request, 'auth/register_visitor.html', {'form': form, 'debug_error': debug_error})
 
 def login_view(request):
+    debug_error = None
     if request.user.is_authenticated:
         if request.user.role == 'admin' or request.user.is_superuser:
             return redirect('admin_dashboard')
@@ -81,7 +100,11 @@ def login_view(request):
                 messages.error(request, "Please enter a correct username and password. Note that both fields may be case-sensitive.")
         except User.DoesNotExist:
             messages.error(request, "Please enter a correct username and password. Note that both fields may be case-sensitive.")
-    return render(request, 'auth/login.html')
+        except Exception as e:
+            import traceback
+            debug_error = f"Login Error: {str(e)}\n{traceback.format_exc()}"
+            messages.error(request, f"Server Error during login: {str(e)}")
+    return render(request, 'auth/login.html', {'debug_error': debug_error})
 
 def logout_view(request):
     logout(request)

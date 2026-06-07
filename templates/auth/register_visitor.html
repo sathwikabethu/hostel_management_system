@@ -6,6 +6,13 @@
     <div class="col-md-6 border rounded p-4 shadow-sm bg-white">
         <h3 class="text-center mb-4 fw-bold text-dark"><i class="fa-solid fa-person-walking-luggage text-primary me-2"></i>Visitor Registration</h3>
         <p class="text-center text-muted small mb-4">Register your account and link it to the Tenant you plan to visit. Access is pending Admin approval.</p>
+        {% if debug_error %}
+            <div class="alert alert-danger shadow-sm mb-4">
+                <h6 class="fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Database / Server Error:</h6>
+                <pre style="white-space: pre-wrap; font-size: 0.8rem; background: #fee2e2; padding: 10px; border-radius: 6px; border: 1px solid #fca5a5; max-height: 250px; overflow-y: auto;">{{ debug_error }}</pre>
+                <p class="small text-muted mb-0 mt-2">This diagnostic traceback helps locate database connection or configuration errors.</p>
+            </div>
+        {% endif %}
         <form method="POST">
             {% csrf_token %}
             {{ form|crispy }}

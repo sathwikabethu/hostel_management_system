@@ -8,6 +8,13 @@
                 <h3 class="fw-bold">Tenant Registration</h3>
                 <p class="text-muted">Create your hostel management account</p>
             </div>
+            {% if debug_error %}
+                <div class="alert alert-danger shadow-sm mb-4">
+                    <h6 class="fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Database / Server Error:</h6>
+                    <pre style="white-space: pre-wrap; font-size: 0.8rem; background: #fee2e2; padding: 10px; border-radius: 6px; border: 1px solid #fca5a5; max-height: 250px; overflow-y: auto;">{{ debug_error }}</pre>
+                    <p class="small text-muted mb-0 mt-2">This diagnostic traceback helps locate database connection or configuration errors.</p>
+                </div>
+            {% endif %}
             <form method="POST">
                 {% csrf_token %}
                 {% for field in form %}
