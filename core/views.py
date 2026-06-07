@@ -765,3 +765,29 @@ def approve_room_request(request, req_id):
             messages.success(request, f"Rejected Room request from {room_req.tenant.username}")
             
     return redirect('admin_dashboard')
+
+def run_migrations_view(request):
+    import io
+    from django.core.management import call_command
+    from django.http import HttpResponse
+    
+    out = io.StringIO()
+    try:
+        out.write("Running migrations...\n")
+        call_command('migrate', interactive=False, stdout=out, stderr=out)
+        out.write("\nChecking for admin user...\n")
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        if not User.objects.filter(role='admin').exists():
+            out.write("Admin not found. Running seed...\n")
+            import seed_data
+            seed_data.seed()
+            out.write("Seeding completed.\n")
+        else:
+            out.write("Admin user already exists. Skipping seed.\n")
+        result = out.getvalue()
+        return HttpResponse(f"<h1>Initialization Succeeded!</h1><pre>{result}</pre>")
+    except Exception as e:
+        import traceback
+        result = out.getvalue()
+        return HttpResponse(f"<h1>Initialization Failed!</h1><pre>{result}\n{str(e)}\n{traceback.format_exc()}</pre>", status=500)
