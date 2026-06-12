@@ -618,9 +618,9 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 **Sathwika Bethu**
 
 - **GitHub** – [@sathwikabethu](https://github.com/sathwikabethu)
-- **LinkedIn** – [Your LinkedIn Profile URL](https://linkedin.com/in/your-profile)
-- **Email** – your.email@example.com
-- **Portfolio** – [Your Portfolio Website](https://yourportfolio.com)
+- **LinkedIn** – [Sathwika Bethu](https://www.linkedin.com/in/sathwika-bethu/)
+- **Email** – bethusathwika@gmail.com
+- **Portfolio** – [View Portfolio](https://portfolio-two-eosin-7szhn91w2y.vercel.app/)
 
 ### Connect With Me
 Feel free to reach out for collaborations, questions, or feedback about this project!
@@ -631,7 +631,7 @@ Feel free to reach out for collaborations, questions, or feedback about this pro
 
 For issues, bug reports, or feature requests:
 - **Create an Issue** – [Report a Bug](https://github.com/sathwikabethu/hostel_management_system/issues/new)
-- **Email Support** – your.email@example.com
+- **Email Support** – bethusathwika@gmail.com
 - **Discussion Forum** – [GitHub Discussions](https://github.com/sathwikabethu/hostel_management_system/discussions)
 
 ---
@@ -654,4 +654,3 @@ For issues, bug reports, or feature requests:
 - [Contributing Guidelines](#-contributing)
 - [Issues & Support](https://github.com/sathwikabethu/hostel_management_system/issues)
 - [Project Roadmap](#-future-enhancements)
-
