@@ -331,32 +331,6 @@ Steps:
 
 ---
 
-## 📸 Screenshots / Demo
-
-### Dashboard
-![Dashboard Screenshot - Placeholder](https://via.placeholder.com/800x400?text=Dashboard+View)
-*Admin dashboard showing key metrics and system overview*
-
-### Room Management
-![Room Management - Placeholder](https://via.placeholder.com/800x400?text=Room+Management)
-*Room allocation interface with real-time status*
-
-### Leave Request Form
-![Leave Request - Placeholder](https://via.placeholder.com/800x400?text=Leave+Request+Form)
-*Student leave submission form with date picker*
-
-### Complaint Tracking
-![Complaint Tracking - Placeholder](https://via.placeholder.com/800x400?text=Complaint+Tracking)
-*Complaint management and status tracking interface*
-
-### Demo Video
-[Watch Demo Video - Video Link Placeholder]
-
-### GIF Demonstrations
-[Animation Demo - GIF Placeholder]
-
----
-
 ## 🎯 Challenges Faced
 
 ### Challenge 1: Concurrent Room Allocations
